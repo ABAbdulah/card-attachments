@@ -1,0 +1,170 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum AuthProvider {
+  EMAIL
+  GOOGLE
+  APPLE
+}
+
+enum Plan {
+  FREE
+  PRO
+}
+
+enum Platform {
+  IOS
+  ANDROID
+}
+
+enum Cadence {
+  WEEKLY
+  MONTHLY
+  QUARTERLY
+  YEARLY
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELLED
+}
+
+enum SubscriptionSource {
+  DETECTED
+  MANUAL
+}
+
+enum Confidence {
+  CONFIRMED
+  LIKELY
+  CHECK
+}
+
+model User {
+  id           String       @id @default(uuid()) @db.Uuid
+  email        String       @unique
+  authProvider AuthProvider @map("auth_provider")
+  homeCurrency String       @default("PKR") @map("home_currency") @db.Char(3)
+  plan         Plan         @default(FREE)
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+
+  devices       Device[]
+  cards         Card[]
+  subscriptions Subscription[]
+
+  @@map("users")
+}
+
+model Device {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  pushToken String   @unique @map("push_token")
+  platform  Platform
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("devices")
+}
+
+model Card {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  nickname  String
+  bank      String?
+  last4     String?  @db.Char(4)
+  currency  String   @db.Char(3)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  statements    Statement[]
+  subscriptions Subscription[]
+
+  @@index([userId])
+  @@map("cards")
+}
+
+/// Metadata only. The uploaded statement file is never stored.
+model Statement {
+  id          String   @id @default(uuid()) @db.Uuid
+  cardId      String   @map("card_id") @db.Uuid
+  periodStart DateTime @map("period_start") @db.Date
+  periodEnd   DateTime @map("period_end") @db.Date
+  importedAt  DateTime @default(now()) @map("imported_at")
+
+  card         Card          @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+
+  @@index([cardId])
+  @@map("statements")
+}
+
+model Transaction {
+  id               String   @id @default(uuid()) @db.Uuid
+  statementId      String   @map("statement_id") @db.Uuid
+  merchantId       String?  @map("merchant_id") @db.Uuid
+  date             DateTime @db.Date
+  rawDescription   String   @map("raw_description")
+  amountLocal      Decimal  @map("amount_local") @db.Decimal(14, 2)
+  amountOriginal   Decimal? @map("amount_original") @db.Decimal(14, 2)
+  originalCurrency String?  @map("original_currency") @db.Char(3)
+
+  statement Statement @relation(fields: [statementId], references: [id], onDelete: Cascade)
+  merchant  Merchant? @relation(fields: [merchantId], references: [id], onDelete: SetNull)
+
+  @@index([statementId])
+  @@index([merchantId, date])
+  @@map("transactions")
+}
+
+/// Shared catalog, updated centrally for all users.
+model Merchant {
+  id                    String   @id @default(uuid()) @db.Uuid
+  name                  String   @unique
+  logoUrl               String?  @map("logo_url")
+  category              String?
+  cancelUrl             String?  @map("cancel_url")
+  descriptorPatterns    String[] @map("descriptor_patterns")
+  isSubscriptionService Boolean  @default(false) @map("is_subscription_service")
+
+  transactions  Transaction[]
+  subscriptions Subscription[]
+
+  @@map("merchants")
+}
+
+model Subscription {
+  id               String             @id @default(uuid()) @db.Uuid
+  userId           String             @map("user_id") @db.Uuid
+  merchantId       String?            @map("merchant_id") @db.Uuid
+  cardId           String?            @map("card_id") @db.Uuid
+  /// Used when the subscription has no catalog merchant (custom manual entry).
+  customName       String?            @map("custom_name")
+  cadence          Cadence
+  priceOriginal    Decimal            @map("price_original") @db.Decimal(14, 2)
+  currency         String             @db.Char(3)
+  lastChargedLocal Decimal?           @map("last_charged_local") @db.Decimal(14, 2)
+  nextRenewal      DateTime?          @map("next_renewal") @db.Date
+  status           SubscriptionStatus @default(ACTIVE)
+  source           SubscriptionSource
+  confidence       Confidence?
+  cancelledAt      DateTime?          @map("cancelled_at")
+  createdAt        DateTime           @default(now()) @map("created_at")
+  updatedAt        DateTime           @updatedAt @map("updated_at")
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  merchant Merchant? @relation(fields: [merchantId], references: [id], onDelete: SetNull)
+  card     Card?     @relation(fields: [cardId], references: [id], onDelete: SetNull)
+
+  @@index([userId, status])
+  @@index([nextRenewal])
+  @@map("subscriptions")
+}
