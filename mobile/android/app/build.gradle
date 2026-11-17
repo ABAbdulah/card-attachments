@@ -79,7 +79,7 @@ android {
 
     namespace "com.appletto.subtrack"
     defaultConfig {
-        applicationId "com.appletto.subtrack"
+        applicationId "com.appletto.cardsweep"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

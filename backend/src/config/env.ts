@@ -17,7 +17,7 @@ const schema = z
 
     /** Sign-in emails go through Resend when set; otherwise codes are logged (dev only). */
     RESEND_API_KEY: z.string().optional(),
-    EMAIL_FROM: z.string().default('SubTrack <login@example.com>'),
+    EMAIL_FROM: z.string().default('CardSweep <login@example.com>'),
 
     /** Enables the AI reader for statement formats without a dedicated parser. */
     ANTHROPIC_API_KEY: z.string().optional(),

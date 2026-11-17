@@ -1,8 +1,8 @@
-# SubTrack privacy policy
+# CardSweep privacy policy
 
 Last updated: [DATE]
 
-SubTrack helps you find and manage the subscriptions charged to your bank card. This policy explains what we collect, why, and what you can do about it. SubTrack is operated by [COMPANY NAME] ("we").
+CardSweep helps you find and manage the subscriptions charged to your bank card. This policy explains what we collect, why, and what you can do about it. CardSweep is operated by [COMPANY NAME] ("we").
 
 ## The short version
 
@@ -44,7 +44,7 @@ We process this data to provide the service you asked for. We do not use it for 
 
 ## Who we share it with
 
-Only the service providers we need to run SubTrack, each limited to their job:
+Only the service providers we need to run CardSweep, each limited to their job:
 
 | Provider | What they do | What they receive |
 |---|---|---|
@@ -76,7 +76,7 @@ Data travels over encrypted connections (HTTPS). Sign-in tokens are stored in yo
 
 ## Children
 
-SubTrack is not intended for anyone under 16, and we do not knowingly collect their data.
+CardSweep is not intended for anyone under 16, and we do not knowingly collect their data.
 
 ## Changes
 

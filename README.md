@@ -1,4 +1,4 @@
-# SubTrack (working name)
+# CardSweep
 
 Find every subscription charging your card from a bank statement, with no bank login.
 

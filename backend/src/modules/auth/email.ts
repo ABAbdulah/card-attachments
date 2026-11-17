@@ -14,8 +14,8 @@ export async function sendLoginCode(email: string, code: string): Promise<void> 
     body: JSON.stringify({
       from: env.EMAIL_FROM,
       to: email,
-      subject: `${code} is your SubTrack code`,
-      text: `Your SubTrack sign-in code is ${code}.\n\nIt expires in 10 minutes. If you did not ask for it, ignore this email.`,
+      subject: `${code} is your CardSweep code`,
+      text: `Your CardSweep sign-in code is ${code}.\n\nIt expires in 10 minutes. If you did not ask for it, ignore this email.`,
     }),
   });
 

@@ -1,2 +1,5 @@
 # Real bank statements: never commit
 /statements/
+
+# Private notes with passwords and keys: never commit
+/SECRETS.md

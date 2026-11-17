@@ -36,7 +36,7 @@ usersRouter.get(
   '/export',
   route(async (req, res) => {
     const data = await exportUserData(userId(req));
-    res.setHeader('Content-Disposition', 'attachment; filename="subtrack-export.json"');
+    res.setHeader('Content-Disposition', 'attachment; filename="cardsweep-export.json"');
     res.json(data);
   }),
 );

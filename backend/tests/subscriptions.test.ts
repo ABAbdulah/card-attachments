@@ -127,7 +127,7 @@ describe('free trials', () => {
 describe('legal pages', () => {
   it('serves the privacy policy and terms publicly', async () => {
     const privacy = await api().get('/privacy').expect(200);
-    expect(privacy.text).toContain('<h1>SubTrack privacy policy</h1>');
+    expect(privacy.text).toContain('<h1>CardSweep privacy policy</h1>');
     const terms = await api().get('/terms').expect(200);
     expect(terms.text).toContain('cannot cancel subscriptions for you');
   });

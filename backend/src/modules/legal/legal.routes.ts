@@ -8,7 +8,7 @@ import { marked } from 'marked';
  */
 const page = (file: string) => {
   const markdown = readFileSync(new URL(`../../../legal/${file}`, import.meta.url), 'utf8');
-  const title = markdown.match(/^# (.+)$/m)?.[1] ?? 'SubTrack';
+  const title = markdown.match(/^# (.+)$/m)?.[1] ?? 'CardSweep';
   return `<!doctype html>
 <html lang="en">
 <head>

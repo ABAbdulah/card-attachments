@@ -47,7 +47,7 @@ export function PaywallScreen({
   return (
     <Screen
       leading="close"
-      title="SubTrack Pro"
+      title="CardSweep Pro"
       subtitle={
         route.params?.reason ??
         'Find every subscription and keep your card clean.'

@@ -59,7 +59,7 @@ export function SubscriptionDetailScreen({
 
   const confirmDelete = () =>
     Alert.alert(
-      'Remove from SubTrack?',
+      'Remove from CardSweep?',
       `This deletes ${s.name} from your list. It does not cancel it with ${s.name}.`,
       [
         { text: 'Keep', style: 'cancel' },
@@ -287,7 +287,7 @@ export function SubscriptionDetailScreen({
       </View>
 
       <Button
-        label="Remove from SubTrack"
+        label="Remove from CardSweep"
         variant="danger"
         icon={Trash2}
         onPress={confirmDelete}

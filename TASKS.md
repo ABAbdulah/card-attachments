@@ -9,7 +9,7 @@ Status: `[x]` done and tested, `[~]` built but waiting on an account, key or mor
 ## Phase S: Project setup
 
 - [x] **S-T1** Git repository, `mobile/` and `backend/` folders
-- [x] **S-T2** React Native CLI app (0.88, TypeScript, no Expo), Android package `com.appletto.subtrack`
+- [x] **S-T2** React Native CLI app (0.88, TypeScript, no Expo), Android app ID `com.appletto.cardsweep` (internal code package stays `com.appletto.subtrack`)
 - [x] **S-T3** Mobile libraries: React Navigation, Reanimated, Gesture Handler, SVG, TanStack Query, Zustand, Lucide icons
 - [x] **S-T4** Theme tokens (dark and light), `useTheme()`, contrast test
 - [x] **S-T5** Navigation shell

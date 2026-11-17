@@ -111,7 +111,7 @@ function SignedInStack() {
         }}
       >
         <AppText variant="heading" align="center">
-          Couldn’t reach SubTrack
+          Couldn’t reach CardSweep
         </AppText>
         <AppText variant="body" color="textMuted" align="center">
           {errorMessage(me.error)}

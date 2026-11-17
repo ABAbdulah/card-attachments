@@ -55,8 +55,8 @@ function ProgressContent({ data }: { data: Progress }) {
           ? `I cut ${formatMoney(
               savings.monthly,
               currency,
-            )} a month of subscriptions I wasn’t using, with SubTrack.`
-          : 'I’m tracking every subscription on my card with SubTrack.',
+            )} a month of subscriptions I wasn’t using, with CardSweep.`
+          : 'I’m tracking every subscription on my card with CardSweep.',
     }).catch(() => undefined);
 
   return (

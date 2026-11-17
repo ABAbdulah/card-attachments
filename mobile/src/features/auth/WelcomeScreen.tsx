@@ -82,7 +82,7 @@ export function Logo({ size = 56 }: { size?: number }) {
       width={size}
       height={size}
       viewBox="0 0 56 56"
-      accessibilityLabel="SubTrack"
+      accessibilityLabel="CardSweep"
     >
       <Circle
         cx={28}

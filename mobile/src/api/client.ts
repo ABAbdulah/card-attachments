@@ -77,7 +77,7 @@ export async function api<T>(path: string, options: Options = {}): Promise<T> {
       throw new ApiError(
         aborted
           ? 'The server took too long to answer. Try again.'
-          : 'Cannot reach SubTrack. Check your internet connection.',
+          : 'Cannot reach CardSweep. Check your internet connection.',
         0,
         aborted ? 'TIMEOUT' : 'NETWORK',
       );

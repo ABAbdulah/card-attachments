@@ -82,7 +82,7 @@ export function SettingsScreen({ navigation }: AppScreenProps<'Settings'>) {
     try {
       const data = await api<unknown>('/me/export');
       await Share.share({
-        title: 'SubTrack data export',
+        title: 'CardSweep data export',
         message: JSON.stringify(data, null, 2),
       });
     } catch (err) {
@@ -228,7 +228,7 @@ export function SettingsScreen({ navigation }: AppScreenProps<'Settings'>) {
         onPress={signOut}
       />
       <AppText variant="caption" color="textMuted" align="center">
-        SubTrack 1.0.0
+        CardSweep 1.0.0
       </AppText>
 
       <Sheet
