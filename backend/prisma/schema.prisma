@@ -46,20 +46,76 @@ enum Confidence {
   CHECK
 }
 
+enum Billing {
+  FIXED
+  USAGE
+  PURCHASE
+}
+
+enum CandidateDecision {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum AlertType {
+  STILL_CHARGING
+  PRICE_INCREASE
+  VERIFIED_CANCEL
+}
+
 model User {
-  id           String       @id @default(uuid()) @db.Uuid
-  email        String       @unique
-  authProvider AuthProvider @map("auth_provider")
-  homeCurrency String       @default("PKR") @map("home_currency") @db.Char(3)
-  plan         Plan         @default(FREE)
-  createdAt    DateTime     @default(now()) @map("created_at")
-  updatedAt    DateTime     @updatedAt @map("updated_at")
+  id                 String       @id @default(uuid()) @db.Uuid
+  email              String       @unique
+  displayName        String?      @map("display_name")
+  authProvider       AuthProvider @map("auth_provider")
+  homeCurrency       String       @default("PKR") @map("home_currency") @db.Char(3)
+  plan               Plan         @default(FREE)
+  /// Monthly savings goal in the home currency, for the savings ring.
+  savingsGoalMonthly Decimal?     @map("savings_goal_monthly") @db.Decimal(14, 2)
+  onboarded          Boolean      @default(false)
+  createdAt          DateTime     @default(now()) @map("created_at")
+  updatedAt          DateTime     @updatedAt @map("updated_at")
 
   devices       Device[]
   cards         Card[]
   subscriptions Subscription[]
+  refreshTokens RefreshToken[]
+  candidates    Candidate[]
+  xpEvents      XpEvent[]
+  badges        UserBadge[]
+  alerts        Alert[]
 
   @@map("users")
+}
+
+/// One-time sign-in codes. Only a hash of the code is stored.
+model OtpCode {
+  id         String    @id @default(uuid()) @db.Uuid
+  email      String
+  codeHash   String    @map("code_hash")
+  attempts   Int       @default(0)
+  expiresAt  DateTime  @map("expires_at")
+  consumedAt DateTime? @map("consumed_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  @@index([email, createdAt])
+  @@map("otp_codes")
+}
+
+/// Opaque refresh tokens, stored hashed, rotated on every use.
+model RefreshToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  tokenHash String    @unique @map("token_hash")
+  expiresAt DateTime  @map("expires_at")
+  revokedAt DateTime? @map("revoked_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_tokens")
 }
 
 model Device {
@@ -86,6 +142,7 @@ model Card {
 
   user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   statements    Statement[]
+  transactions  Transaction[]
   subscriptions Subscription[]
 
   @@index([userId])
@@ -94,49 +151,71 @@ model Card {
 
 /// Metadata only. The uploaded statement file is never stored.
 model Statement {
-  id          String   @id @default(uuid()) @db.Uuid
-  cardId      String   @map("card_id") @db.Uuid
-  periodStart DateTime @map("period_start") @db.Date
-  periodEnd   DateTime @map("period_end") @db.Date
-  importedAt  DateTime @default(now()) @map("imported_at")
+  id               String   @id @default(uuid()) @db.Uuid
+  cardId           String   @map("card_id") @db.Uuid
+  bank             String
+  periodStart      DateTime @map("period_start") @db.Date
+  periodEnd        DateTime @map("period_end") @db.Date
+  /// Card charges found in the file (transfers are never stored).
+  chargeCount      Int      @map("charge_count")
+  /// Charges already stored from an earlier, overlapping statement.
+  duplicateCount   Int      @default(0) @map("duplicate_count")
+  importedAt       DateTime @default(now()) @map("imported_at")
 
   card         Card          @relation(fields: [cardId], references: [id], onDelete: Cascade)
   transactions Transaction[]
+  candidates   Candidate[]
 
   @@index([cardId])
   @@map("statements")
 }
 
+/// Card charges only. Person-to-person transfers are dropped before storage.
 model Transaction {
   id               String   @id @default(uuid()) @db.Uuid
+  cardId           String   @map("card_id") @db.Uuid
   statementId      String   @map("statement_id") @db.Uuid
   merchantId       String?  @map("merchant_id") @db.Uuid
+  /// Normalised merchant identity used for grouping, e.g. "spotify".
+  merchantKey      String   @map("merchant_key")
+  merchantName     String   @map("merchant_name")
   date             DateTime @db.Date
   rawDescription   String   @map("raw_description")
+  /// Positive amount charged, in the card currency.
   amountLocal      Decimal  @map("amount_local") @db.Decimal(14, 2)
   amountOriginal   Decimal? @map("amount_original") @db.Decimal(14, 2)
   originalCurrency String?  @map("original_currency") @db.Char(3)
+  /// 0 for the first identical charge (same day, text and amount) in a statement, 1 for the second, ...
+  /// Keeps genuine repeat charges while still skipping them when an overlapping statement is uploaded.
+  occurrence       Int      @default(0)
 
+  card      Card      @relation(fields: [cardId], references: [id], onDelete: Cascade)
   statement Statement @relation(fields: [statementId], references: [id], onDelete: Cascade)
   merchant  Merchant? @relation(fields: [merchantId], references: [id], onDelete: SetNull)
 
-  @@index([statementId])
-  @@index([merchantId, date])
+  @@unique([cardId, date, rawDescription, amountLocal, occurrence])
+  @@index([cardId, merchantKey, date])
   @@map("transactions")
 }
 
-/// Shared catalog, updated centrally for all users.
+/// Shared catalog, seeded from src/modules/merchants/catalog.ts.
 model Merchant {
   id                    String   @id @default(uuid()) @db.Uuid
-  name                  String   @unique
-  logoUrl               String?  @map("logo_url")
-  category              String?
-  cancelUrl             String?  @map("cancel_url")
+  slug                  String   @unique
+  name                  String
+  category              String
+  billing               Billing
+  isSubscriptionService Boolean  @map("is_subscription_service")
   descriptorPatterns    String[] @map("descriptor_patterns")
-  isSubscriptionService Boolean  @default(false) @map("is_subscription_service")
+  manageUrl             String?  @map("manage_url")
+  brandColor            String?  @map("brand_color")
+  typicalPrice          Decimal? @map("typical_price") @db.Decimal(14, 2)
+  typicalCurrency       String?  @map("typical_currency") @db.Char(3)
+  typicalCadence        Cadence? @map("typical_cadence")
 
   transactions  Transaction[]
   subscriptions Subscription[]
+  candidates    Candidate[]
 
   @@map("merchants")
 }
@@ -146,25 +225,117 @@ model Subscription {
   userId           String             @map("user_id") @db.Uuid
   merchantId       String?            @map("merchant_id") @db.Uuid
   cardId           String?            @map("card_id") @db.Uuid
-  /// Used when the subscription has no catalog merchant (custom manual entry).
-  customName       String?            @map("custom_name")
+  name             String
+  /// Links the subscription to statement charges, e.g. "spotify".
+  merchantKey      String?            @map("merchant_key")
+  category         String?
   cadence          Cadence
   priceOriginal    Decimal            @map("price_original") @db.Decimal(14, 2)
   currency         String             @db.Char(3)
+  /// What the bank actually took last time, in the card currency.
   lastChargedLocal Decimal?           @map("last_charged_local") @db.Decimal(14, 2)
+  lastChargedAt    DateTime?          @map("last_charged_at") @db.Date
   nextRenewal      DateTime?          @map("next_renewal") @db.Date
   status           SubscriptionStatus @default(ACTIVE)
   source           SubscriptionSource
   confidence       Confidence?
   cancelledAt      DateTime?          @map("cancelled_at")
+  /// Set when a later statement proves the cancellation worked.
+  verifiedAt       DateTime?          @map("verified_at")
+  notes            String?
   createdAt        DateTime           @default(now()) @map("created_at")
   updatedAt        DateTime           @updatedAt @map("updated_at")
 
-  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  merchant Merchant? @relation(fields: [merchantId], references: [id], onDelete: SetNull)
-  card     Card?     @relation(fields: [cardId], references: [id], onDelete: SetNull)
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  merchant   Merchant?   @relation(fields: [merchantId], references: [id], onDelete: SetNull)
+  card       Card?       @relation(fields: [cardId], references: [id], onDelete: SetNull)
+  candidates Candidate[]
+  alerts     Alert[]
 
   @@index([userId, status])
-  @@index([nextRenewal])
+  @@index([userId, merchantKey])
   @@map("subscriptions")
+}
+
+/// A detected subscription waiting for the user to confirm or reject it.
+model Candidate {
+  id               String            @id @default(uuid()) @db.Uuid
+  userId           String            @map("user_id") @db.Uuid
+  statementId      String            @map("statement_id") @db.Uuid
+  merchantId       String?           @map("merchant_id") @db.Uuid
+  merchantKey      String            @map("merchant_key")
+  merchantName     String            @map("merchant_name")
+  confidence       Confidence
+  reason           String
+  cadence          Cadence?
+  chargeCount      Int               @map("charge_count")
+  firstCharge      DateTime          @map("first_charge") @db.Date
+  lastCharge       DateTime          @map("last_charge") @db.Date
+  lastAmountLocal  Decimal           @map("last_amount_local") @db.Decimal(14, 2)
+  priceOriginal    Decimal?          @map("price_original") @db.Decimal(14, 2)
+  originalCurrency String?           @map("original_currency") @db.Char(3)
+  decision         CandidateDecision @default(PENDING)
+  subscriptionId   String?           @map("subscription_id") @db.Uuid
+  createdAt        DateTime          @default(now()) @map("created_at")
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  statement    Statement     @relation(fields: [statementId], references: [id], onDelete: Cascade)
+  merchant     Merchant?     @relation(fields: [merchantId], references: [id], onDelete: SetNull)
+  subscription Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+
+  @@index([userId, decision])
+  @@map("candidates")
+}
+
+model XpEvent {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  type      String
+  xp        Int
+  /// The subscription, statement or candidate the XP was earned on.
+  refId     String?  @map("ref_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, type, refId])
+  @@index([userId, createdAt])
+  @@map("xp_events")
+}
+
+model UserBadge {
+  userId   String   @map("user_id") @db.Uuid
+  badgeId  String   @map("badge_id")
+  earnedAt DateTime @default(now()) @map("earned_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, badgeId])
+  @@map("user_badges")
+}
+
+model Alert {
+  id             String    @id @default(uuid()) @db.Uuid
+  userId         String    @map("user_id") @db.Uuid
+  subscriptionId String?   @map("subscription_id") @db.Uuid
+  type           AlertType
+  title          String
+  body           String
+  createdAt      DateTime  @default(now()) @map("created_at")
+  readAt         DateTime? @map("read_at")
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subscription Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+
+  @@index([userId, readAt])
+  @@map("alerts")
+}
+
+/// Market exchange rates against USD, refreshed daily.
+model FxRate {
+  currency  String   @id @db.Char(3)
+  perUsd    Decimal  @map("per_usd") @db.Decimal(18, 6)
+  fetchedAt DateTime @map("fetched_at")
+
+  @@map("fx_rates")
 }

@@ -2,125 +2,109 @@
 
 Product plan: [PLAN.md](PLAN.md). Design guide: [DESIGN.md](DESIGN.md).
 
-Each task has an ID so it can be picked individually (for example "implement P2-T3"). Tasks inside a phase are listed in the order they should be built. "Needs" names tasks that must be finished first.
+Each task has an ID so it can be picked individually (for example "implement P2-T3").
 
-Status: `[x]` done, `[ ]` not started.
+Status: `[x]` done and tested, `[~]` built but waiting on an account, key or more data, `[ ]` not started.
 
-## Phase S: Project setup (done)
+## Phase S: Project setup
 
 - [x] **S-T1** Git repository, `mobile/` and `backend/` folders
 - [x] **S-T2** React Native CLI app (0.88, TypeScript, no Expo), Android package `com.appletto.subtrack`
 - [x] **S-T3** Mobile libraries: React Navigation, Reanimated, Gesture Handler, SVG, TanStack Query, Zustand, Lucide icons
 - [x] **S-T4** Theme tokens (dark and light), `useTheme()`, contrast test
-- [x] **S-T5** Four-tab navigation shell with placeholder screens
+- [x] **S-T5** Navigation shell
 - [x] **S-T6** Backend: Node.js + Express + TypeScript, env validation, logging, error handling, health endpoints, tests
-- [x] **S-T7** Prisma schema for the full data model and first migration
+- [x] **S-T7** Prisma schema and migrations
 - [x] **S-T8** Local Postgres through Docker Compose (port 5440)
 
 ## Phase 0: Detection spike
 
-Goal: prove statements can be read accurately before building features on top.
-
-- [ ] **P0-T1** Collect 10–15 real statements from 5+ banks into a private, git-ignored folder
-- [ ] **P0-T2** Script: extract text from PDF (including password-protected) and CSV
-- [ ] **P0-T3** Script: strip personal data, send lines to the AI model, get structured transactions back
-- [ ] **P0-T4** Script: group by merchant and detect recurring charges
-- [ ] **P0-T5** Measure accuracy against a hand-labelled answer sheet; target 90% or better. Decide go / adjust.
+- [~] **P0-T1** Real statements in the git-ignored `statements/` folder. 1 bank so far (SadaPay, 3.5 months). Needs more banks and a 12-month export.
+- [x] **P0-T2** PDF text extraction (password-protected PDFs supported) and CSV reader; SadaPay parser checked against the statement's own totals
+- [~] **P0-T3** Personal-data stripping and AI structuring. Built and unit-tested (redaction); the AI call is untested until `ANTHROPIC_API_KEY` is set.
+- [x] **P0-T4** Recurring-charge detection (`backend/scripts/spike.ts`)
+- [~] **P0-T5** Accuracy check. Needs your confirmation of which SadaPay results are right.
 
 ## Phase 1: Backend foundation
 
-- [ ] **P1-T1** Railway project: API service and Postgres, staging and production environments
-- [ ] **P1-T2** Auth: email one-time code (send, verify), JWT access and refresh tokens
-- [ ] **P1-T3** Auth: Google and Apple sign-in (Needs P1-T2)
-- [ ] **P1-T4** Auth middleware, rate limiting, request validation helper
-- [ ] **P1-T5** User endpoints: profile, home currency, export my data, delete my account
-- [ ] **P1-T6** Deploy pipeline: build, run migrations, health check; set the production API URL in the app
-- [ ] **P1-T7** Error tracking (Sentry) on the API
+- [~] **P1-T1** Railway: `backend/railway.json` ready. Needs your Railway account to create the project.
+- [x] **P1-T2** Email one-time code sign-in, JWT access tokens, rotating refresh tokens with reuse detection
+- [ ] **P1-T3** Google and Apple sign-in (needs OAuth client IDs and Apple developer account)
+- [x] **P1-T4** Auth middleware, rate limiting on code requests, request validation
+- [x] **P1-T5** Profile, home currency, savings goal, export my data, delete my account
+- [~] **P1-T6** Deploy pipeline (build, migrate, seed, health check) configured; production API URL to set after the first deploy
+- [ ] **P1-T7** Error tracking (Sentry)
 
 ## Phase D: Design system and components
 
-Can run alongside Phase 1.
+- [ ] **D-T1** Mobbin references (needs the Mobbin connector authorised)
+- [x] **D-T2** IBM Plex Sans bundled for Android and iOS
+- [x] **D-T3** Base components: AppText, Button, Surface, Input, Chip, Screen, HeaderButton
+- [x] **D-T4** Subscription row, merchant avatar (brand colour + initials)
+- [x] **D-T5** Animated active/cancelled toggle with spring and haptic
+- [x] **D-T6** Animated money counter
+- [x] **D-T7** Progress ring (SVG) and progress bar
+- [x] **D-T8** Bottom sheet, toast, skeletons, empty and error states, segmented control, celebration overlay
+- [ ] **D-T9** Component tests (only the theme contrast test exists)
 
-- [ ] **D-T1** Pull real-app references from Mobbin for dashboard, subscription list, review and paywall (needs the Mobbin connector authorised)
-- [ ] **D-T2** Bundle IBM Plex Sans and wire it into the typography tokens
-- [ ] **D-T3** Base components: Text, Button, Card, Input, Chip, Screen wrapper
-- [ ] **D-T4** List components: subscription row, merchant logo with fallback initials, section header
-- [ ] **D-T5** Animated toggle (active/cancelled) with spring and haptic
-- [ ] **D-T6** Animated money counter (tabular numbers, counts up and down)
-- [ ] **D-T7** Progress ring (SVG) and progress bar
-- [ ] **D-T8** Bottom sheet, toast, skeleton loader, empty-state and error-state blocks
-- [ ] **D-T9** Component test setup (React Native Testing Library, Jest config for native libraries)
+## Phase 2: Core app
 
-## Phase 2: Core app (manual tracking)
-
-Needs Phase 1 (auth) and D-T3 to D-T6.
-
-- [ ] **P2-T1** API client with token storage (Keychain/Keystore) and automatic refresh
-- [ ] **P2-T2** Onboarding and sign-in screens
-- [ ] **P2-T3** Backend: subscriptions endpoints (list, create, update, delete, toggle status)
-- [ ] **P2-T4** Backend: cards endpoints
-- [ ] **P2-T5** Backend: currency rates (daily fetch, cache, conversion with configurable bank markup)
-- [ ] **P2-T6** Subscriptions list screen with active/cancelled toggle (Needs P2-T3)
-- [ ] **P2-T7** Add/Edit subscription screen with catalog search and custom entry (Needs P2-T3)
-- [ ] **P2-T8** Subscription detail screen
-- [ ] **P2-T9** Home dashboard: due this month, monthly average, yearly total, upcoming renewals (Needs P2-T5)
-- [ ] **P2-T10** Settings screen: currency, theme, account, data export and deletion
+- [x] **P2-T1** API client with Keychain/Keystore token storage and automatic refresh
+- [x] **P2-T2** Welcome, email, 6-digit code and currency onboarding screens
+- [x] **P2-T3** Subscriptions endpoints (list, create, update, delete, toggle with rewards)
+- [x] **P2-T4** Cards endpoints
+- [x] **P2-T5** Exchange rates: daily refresh from open.er-api.com, cached in Postgres, offline fallback table
+- [x] **P2-T6** Subscriptions list with active/cancelled toggle and honest cancel sheet
+- [x] **P2-T7** Add/Edit with catalog search (98 services) and custom entry
+- [x] **P2-T8** Subscription detail: real vs listed price, charge history, cancel guide
+- [x] **P2-T9** Home dashboard: due this month (paid / still to come), monthly average, yearly, upcoming, categories, level and streak
+- [x] **P2-T10** Settings: currency, reminders, plan, export, delete account, sign out
 
 ## Phase 3: Statement import
 
-Needs Phase 0 result and Phase 2.
-
-- [ ] **P3-T1** Backend: upload endpoint that parses in memory and never stores the file
-- [ ] **P3-T2** Backend: extraction service (PDF, password PDF, CSV/Excel), productionised from P0-T2
-- [ ] **P3-T3** Backend: personal-data stripping and AI structuring service, from P0-T3
-- [ ] **P3-T4** Backend: job queue (BullMQ + Redis) with job status endpoint
-- [ ] **P3-T5** App: import flow (file picker, password prompt, staged progress)
-- [ ] **P3-T6** App: review screen to confirm or reject each detected subscription
-- [ ] **P3-T7** Duplicate handling when overlapping statements are uploaded
+- [x] **P3-T1** Upload endpoint that parses in memory and never stores the file
+- [x] **P3-T2** Extraction service (SadaPay PDF, password PDFs, generic CSV)
+- [~] **P3-T3** AI reader for other banks (needs `ANTHROPIC_API_KEY`)
+- [ ] **P3-T4** Job queue: not needed yet (an import takes about 5 seconds); revisit if the AI reader is slow for 12-month statements
+- [x] **P3-T5** Import flow: file picker, password prompt, staged progress, result summary
+- [x] **P3-T6** Review screen: confirm or reject each suggestion
+- [x] **P3-T7** Duplicate handling for overlapping statements (identical same-day charges are kept)
 
 ## Phase 4: Detection quality
 
-- [ ] **P4-T1** Merchant catalog seed: about 300 services with descriptor patterns, logo, category, cancel link
-- [ ] **P4-T2** Recurrence engine: weekly, monthly, quarterly, yearly; date and amount tolerance
-- [ ] **P4-T3** Confidence scoring (Confirmed / Likely / Check this)
-- [ ] **P4-T4** Hard cases: Apple and Google Play bundles, single annual charge, usage-based charges
-- [ ] **P4-T5** Regression test suite built from the Phase 0 statements
-- [ ] **P4-T6** Price-increase and duplicate-subscription detection
+- [~] **P4-T1** Merchant catalog: 98 services (target 300)
+- [x] **P4-T2** Recurrence engine: weekly, monthly, quarterly, yearly with tolerances
+- [x] **P4-T3** Confidence scoring
+- [~] **P4-T4** Hard cases: usage-based billing, one-off merchants and Google Play handled; Apple bundle splitting not built
+- [~] **P4-T5** Regression tests on synthetic statements; real-statement fixtures need anonymised samples
+- [x] **P4-T6** Price-increase alerts
 
 ## Phase 5: Gamification
 
-Needs Phase 2; verification badge needs P6-T2.
-
-- [ ] **P5-T1** Backend: XP events, level calculation, monthly streak, savings goal
-- [ ] **P5-T2** Backend: badge rules and award endpoint
-- [ ] **P5-T3** Progress screen: savings ring, level, streak, badge grid (Needs D-T7)
-- [ ] **P5-T4** Cancel celebration: haptic, count-down total, confetti, "+XP" chip
-- [ ] **P5-T5** First-run checklist on Home that awards the first XP
-- [ ] **P5-T6** Shareable savings card (image) for social sharing
+- [x] **P5-T1** XP events (once per action), 11 levels, monthly streak, savings goal
+- [x] **P5-T2** 11 badges evaluated on the server
+- [x] **P5-T3** Progress screen: savings ring, level, streak, badge grid, recent XP
+- [x] **P5-T4** Celebration: haptic, counting totals, confetti, +XP, new badges
+- [ ] **P5-T5** First-run checklist on Home
+- [~] **P5-T6** Share savings (text share works; image card not built)
 
 ## Phase 6: Retention
 
-- [ ] **P6-T1** Push notifications: Firebase setup, device registration, renewal reminders 3 days ahead
-- [ ] **P6-T2** Re-upload verification: "you marked this cancelled but it charged again"
-- [ ] **P6-T3** Cancel guides per merchant (steps and direct link)
-- [ ] **P6-T4** Cards tab: every merchant that holds the card, with last charge date
+- [~] **P6-T1** Renewal reminders 3 days ahead, scheduled on the device with Notifee (no push server needed). Server push via Firebase not set up.
+- [x] **P6-T2** Re-upload verification: still-charging alerts and confirmed-cancellation badge
+- [x] **P6-T3** Cancel guides with billing links for catalog services
+- [x] **P6-T4** Cards tab: every merchant that charged the card, filters, statements list
 - [ ] **P6-T5** OCR for scanned statements and photos
 - [ ] **P6-T6** Free-trial end alerts
 
 ## Phase 7: Monetization and launch
 
-- [ ] **P7-T1** RevenueCat: products (yearly, lifetime), entitlement checks on the API
-- [ ] **P7-T2** Paywall screen and free-plan limits
-- [ ] **P7-T3** Analytics events (PostHog) with no financial data
-- [ ] **P7-T4** Privacy policy, terms, in-app privacy explainer
-- [ ] **P7-T5** App icon, splash screen, final name and branding
-- [ ] **P7-T6** iOS cloud build (Codemagic or GitHub Actions) and TestFlight
+- [~] **P7-T1** RevenueCat webhook endpoint built; needs RevenueCat account, store products and the mobile SDK
+- [x] **P7-T2** Paywall screen and free-plan limits (1 scan, 5 manual subscriptions), test-account Pro switch
+- [ ] **P7-T3** Analytics (PostHog)
+- [ ] **P7-T4** Privacy policy and terms
+- [ ] **P7-T5** App icon, splash screen, final name
+- [ ] **P7-T6** iOS cloud build and TestFlight
 - [ ] **P7-T7** Android release signing and Play internal testing
-- [ ] **P7-T8** Store listings: screenshots, descriptions, data-safety forms
-- [ ] **P7-T9** Beta round with 10–20 users, fix list, public release
-
-## Suggested order
-
-Phase 0 → Phase 1 and Phase D together → Phase 2 → Phase 3 → Phase 4 → Phase 5 → Phase 6 → Phase 7.
-
-Phase 0 comes first because every later phase depends on statement reading being accurate.
+- [ ] **P7-T8** Store listings
+- [ ] **P7-T9** Beta round

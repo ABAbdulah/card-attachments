@@ -38,7 +38,7 @@ export const darkColors: ColorTokens = {
 export const lightColors: ColorTokens = {
   background: '#F8FAFC',
   surface: '#FFFFFF',
-  surfaceRaised: '#FFFFFF',
+  surfaceRaised: '#EEF2F7',
   border: '#E2E8F0',
   text: '#0F172A',
   textMuted: '#475569',
@@ -69,15 +69,27 @@ export const radius = {
   full: 999,
 } as const;
 
+/** IBM Plex Sans, one file per weight (fontWeight is not combined with custom fonts on Android). */
+export const fonts = {
+  regular: 'IBMPlexSans-Regular',
+  medium: 'IBMPlexSans-Medium',
+  semibold: 'IBMPlexSans-SemiBold',
+  bold: 'IBMPlexSans-Bold',
+} as const;
+
 export const typography = {
   /** Hero money figures on the dashboard. */
-  display: { fontSize: 40, lineHeight: 48, fontWeight: '700' },
-  title: { fontSize: 24, lineHeight: 32, fontWeight: '700' },
-  heading: { fontSize: 18, lineHeight: 26, fontWeight: '600' },
-  body: { fontSize: 16, lineHeight: 24, fontWeight: '400' },
-  label: { fontSize: 14, lineHeight: 20, fontWeight: '500' },
-  caption: { fontSize: 12, lineHeight: 16, fontWeight: '400' },
+  display: { fontFamily: fonts.bold, fontSize: 40, lineHeight: 48 },
+  title: { fontFamily: fonts.bold, fontSize: 26, lineHeight: 34 },
+  heading: { fontFamily: fonts.semibold, fontSize: 18, lineHeight: 26 },
+  body: { fontFamily: fonts.regular, fontSize: 16, lineHeight: 24 },
+  bodyStrong: { fontFamily: fonts.semibold, fontSize: 16, lineHeight: 24 },
+  label: { fontFamily: fonts.medium, fontSize: 14, lineHeight: 20 },
+  caption: { fontFamily: fonts.regular, fontSize: 13, lineHeight: 18 },
+  overline: { fontFamily: fonts.semibold, fontSize: 12, lineHeight: 16, letterSpacing: 0.6 },
 } as const;
+
+export type TypographyVariant = keyof typeof typography;
 
 /** Apply to every money figure so digits do not shift while animating. */
 export const tabularNumbers = { fontVariant: ['tabular-nums'] } as const;

@@ -1,0 +1,4 @@
+<resources>
+    <!-- Matches the light theme background token, so launching shows no white flash. -->
+    <color name="app_background">#F8FAFC</color>
+</resources>

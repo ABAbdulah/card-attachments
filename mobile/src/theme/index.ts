@@ -1,6 +1,7 @@
 import { useColorScheme } from 'react-native';
 import {
   darkColors,
+  fonts,
   iconSize,
   lightColors,
   motion,
@@ -19,6 +20,7 @@ export function useTheme() {
     spacing,
     radius,
     typography,
+    fonts,
     tabularNumbers,
     motion,
     iconSize,

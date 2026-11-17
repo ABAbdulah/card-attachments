@@ -77,10 +77,10 @@ Known hard cases to design for:
 | Auth | Email OTP plus Google and Apple sign-in; JWT access and refresh tokens |
 | PDF/CSV text | pdf.js on the server (handles password PDFs) |
 | OCR | Server-side OCR for scanned statements and photos |
-| AI parsing | Claude Haiku with structured JSON output, at roughly a few cents per statement |
-| Background jobs | Queue worker on Railway (BullMQ + Redis) for parsing and reminders |
+| Statement reading | Dedicated readers where available (SadaPay PDF, any bank's CSV); otherwise Claude with structured JSON output on redacted text. Model set by `ANTHROPIC_MODEL` (default `claude-opus-5-5`; `claude-haiku-5-5` costs far less per statement) |
+| Background jobs | None yet: an import finishes in seconds. Add a queue (BullMQ + Redis) if AI reading of long statements gets slow |
 | FX rates | Rates API, cached daily in Postgres |
-| Reminders | Push notifications through Firebase Cloud Messaging |
+| Reminders | Local notifications scheduled on the phone (Notifee), 3 days before each renewal; no push server needed. Firebase push only if server-triggered alerts are wanted later |
 | Payments | RevenueCat |
 | Analytics and errors | PostHog and Sentry, events only and never financial data |
 

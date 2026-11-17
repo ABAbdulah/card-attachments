@@ -28,7 +28,7 @@ Tokens live in [mobile/src/theme/tokens.ts](mobile/src/theme/tokens.ts). Screens
 |---|---|---|---|
 | background | `#0B1120` | `#F8FAFC` | Screen background |
 | surface | `#131C2E` | `#FFFFFF` | Cards, tab bar |
-| surfaceRaised | `#1B2640` | `#FFFFFF` | Sheets, pressed cards |
+| surfaceRaised | `#1B2640` | `#EEF2F7` | Selected tabs, secondary buttons, ring tracks |
 | text | `#F8FAFC` | `#0F172A` | Primary text |
 | textMuted | `#94A3B8` | `#475569` | Secondary text |
 | primary | `#2563EB` | `#1E40AF` | Buttons, active tab |
@@ -38,7 +38,7 @@ Tokens live in [mobile/src/theme/tokens.ts](mobile/src/theme/tokens.ts). Screens
 
 ### Type
 
-IBM Plex Sans (to be bundled in task D-T2; the system font is used until then). Scale: display 40, title 24, heading 18, body 16, label 14, caption 12. Every money figure uses tabular numbers so digits do not shift while animating.
+IBM Plex Sans, bundled in `mobile/assets/fonts` (Regular, Medium, SemiBold, Bold). Scale: display 40, title 24, heading 18, body 16, label 14, caption 12. Every money figure uses tabular numbers so digits do not shift while animating.
 
 ### Spacing, shape, motion
 
