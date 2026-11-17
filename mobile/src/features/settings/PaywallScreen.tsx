@@ -1,4 +1,11 @@
-import { Bell, CircleCheck, CreditCard, Infinity as InfinityIcon, ScanLine, ShieldCheck } from 'lucide-react-native';
+import {
+  Bell,
+  CircleCheck,
+  CreditCard,
+  Infinity as InfinityIcon,
+  ScanLine,
+  ShieldCheck,
+} from 'lucide-react-native';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { errorMessage } from '../../api/client';
@@ -15,14 +22,20 @@ import { useTheme } from '../../theme';
 const BENEFITS = [
   { icon: ScanLine, text: 'Unlimited statement scans, every card and bank' },
   { icon: InfinityIcon, text: 'Track as many subscriptions as you have' },
-  { icon: ShieldCheck, text: 'Proof your cancellations worked, statement by statement' },
+  {
+    icon: ShieldCheck,
+    text: 'Proof your cancellations worked, statement by statement',
+  },
   { icon: Bell, text: 'Price-increase and still-charging alerts' },
   { icon: CreditCard, text: 'The full list of merchants holding your card' },
 ];
 
 type PlanId = 'lifetime' | 'yearly';
 
-export function PaywallScreen({ route, navigation }: AppScreenProps<'Paywall'>) {
+export function PaywallScreen({
+  route,
+  navigation,
+}: AppScreenProps<'Paywall'>) {
   const { colors, spacing, radius } = useTheme();
   const config = useBillingConfig();
   const devPlan = useDevPlan();
@@ -35,10 +48,18 @@ export function PaywallScreen({ route, navigation }: AppScreenProps<'Paywall'>) 
     <Screen
       leading="close"
       title="SubTrack Pro"
-      subtitle={route.params?.reason ?? 'Find every subscription and keep your card clean.'}
+      subtitle={
+        route.params?.reason ??
+        'Find every subscription and keep your card clean.'
+      }
       footer={
         purchasesEnabled ? (
-          <Button label="Continue" onPress={() => toast('Purchases are handled by the app store.', 'info')} />
+          <Button
+            label="Continue"
+            onPress={() =>
+              toast('Purchases are handled by the app store.', 'info')
+            }
+          />
         ) : devSwitch ? (
           <Button
             label="Activate Pro (test account)"
@@ -49,7 +70,7 @@ export function PaywallScreen({ route, navigation }: AppScreenProps<'Paywall'>) 
                   navigation.goBack();
                   celebrateRewards('Pro is on', null);
                 },
-                onError: (e) => toast(errorMessage(e), 'error'),
+                onError: e => toast(errorMessage(e), 'error'),
               })
             }
           />
@@ -78,16 +99,37 @@ export function PaywallScreen({ route, navigation }: AppScreenProps<'Paywall'>) 
           tag="Best for a subscription tracker"
           radius={radius.lg}
         />
-        <PlanCard selected={plan === 'yearly'} onPress={() => setPlan('yearly')} title="Yearly" caption="Renews once a year. Cancel any time." radius={radius.lg} />
+        <PlanCard
+          selected={plan === 'yearly'}
+          onPress={() => setPlan('yearly')}
+          title="Yearly"
+          caption="Renews once a year. Cancel any time."
+          radius={radius.lg}
+        />
       </View>
       <AppText variant="caption" color="textMuted" align="center">
-        Prices are shown by the App Store or Google Play at checkout, in your currency.
+        Prices are shown by the App Store or Google Play at checkout, in your
+        currency.
       </AppText>
     </Screen>
   );
 }
 
-function PlanCard({ selected, onPress, title, caption, tag, radius }: { selected: boolean; onPress: () => void; title: string; caption: string; tag?: string; radius: number }) {
+function PlanCard({
+  selected,
+  onPress,
+  title,
+  caption,
+  tag,
+  radius,
+}: {
+  selected: boolean;
+  onPress: () => void;
+  title: string;
+  caption: string;
+  tag?: string;
+  radius: number;
+}) {
   const { colors, spacing } = useTheme();
   return (
     <PressableScale
@@ -95,7 +137,17 @@ function PlanCard({ selected, onPress, title, caption, tag, radius }: { selected
       accessibilityRole="radio"
       accessibilityState={{ selected }}
       accessibilityLabel={`${title}. ${caption}`}
-      style={[styles.row, { gap: spacing.md, padding: spacing.lg, borderRadius: radius, borderWidth: 1.5, borderColor: selected ? colors.reward : colors.border, backgroundColor: colors.surface }]}
+      style={[
+        styles.row,
+        {
+          gap: spacing.md,
+          padding: spacing.lg,
+          borderRadius: radius,
+          borderWidth: 1.5,
+          borderColor: selected ? colors.reward : colors.border,
+          backgroundColor: colors.surface,
+        },
+      ]}
     >
       <CircleCheck color={selected ? colors.reward : colors.border} size={22} />
       <View style={styles.flex}>
@@ -104,7 +156,11 @@ function PlanCard({ selected, onPress, title, caption, tag, radius }: { selected
           {caption}
         </AppText>
         {tag ? (
-          <AppText variant="overline" color="reward" style={{ marginTop: spacing.xs }}>
+          <AppText
+            variant="overline"
+            color="reward"
+            style={{ marginTop: spacing.xs }}
+          >
             {tag.toUpperCase()}
           </AppText>
         ) : null}

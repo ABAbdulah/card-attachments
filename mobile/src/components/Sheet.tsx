@@ -1,11 +1,28 @@
 import type { ReactNode } from 'react';
-import { KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, View } from 'react-native';
-import Animated, { FadeIn, FadeOut, SlideInDown, SlideOutDown } from 'react-native-reanimated';
+import {
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  StyleSheet,
+  View,
+} from 'react-native';
+import Animated, {
+  FadeIn,
+  FadeOut,
+  SlideInDown,
+  SlideOutDown,
+} from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../theme';
 import { AppText } from './AppText';
 
-type Props = { visible: boolean; onClose: () => void; title?: string; children: ReactNode };
+type Props = {
+  visible: boolean;
+  onClose: () => void;
+  title?: string;
+  children: ReactNode;
+};
 
 /** Bottom sheet over a dimmed screen. Tapping the scrim or the back button closes it. */
 export function Sheet({ visible, onClose, title, children }: Props) {
@@ -13,11 +30,30 @@ export function Sheet({ visible, onClose, title, children }: Props) {
   const insets = useSafeAreaInsets();
 
   return (
-    <Modal visible={visible} transparent animationType="none" onRequestClose={onClose} statusBarTranslucent navigationBarTranslucent>
+    <Modal
+      visible={visible}
+      transparent
+      animationType="none"
+      onRequestClose={onClose}
+      statusBarTranslucent
+      navigationBarTranslucent
+    >
       {visible ? (
-        <KeyboardAvoidingView style={styles.fill} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-          <Animated.View entering={FadeIn.duration(180)} exiting={FadeOut.duration(120)} style={[StyleSheet.absoluteFill, { backgroundColor: colors.scrim }]}>
-            <Pressable style={styles.fill} onPress={onClose} accessibilityRole="button" accessibilityLabel="Close" />
+        <KeyboardAvoidingView
+          style={styles.fill}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        >
+          <Animated.View
+            entering={FadeIn.duration(180)}
+            exiting={FadeOut.duration(120)}
+            style={[StyleSheet.absoluteFill, { backgroundColor: colors.scrim }]}
+          >
+            <Pressable
+              style={styles.fill}
+              onPress={onClose}
+              accessibilityRole="button"
+              accessibilityLabel="Close"
+            />
           </Animated.View>
           <Animated.View
             entering={SlideInDown.springify().damping(20).stiffness(220)}
@@ -52,5 +88,11 @@ export function Sheet({ visible, onClose, title, children }: Props) {
 const styles = StyleSheet.create({
   fill: { flex: 1, justifyContent: 'flex-end' },
   panel: { borderWidth: 1, borderBottomWidth: 0, maxHeight: '88%' },
-  handle: { alignSelf: 'center', width: 40, height: 4, borderRadius: 2, marginTop: -8 },
+  handle: {
+    alignSelf: 'center',
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    marginTop: -8,
+  },
 });

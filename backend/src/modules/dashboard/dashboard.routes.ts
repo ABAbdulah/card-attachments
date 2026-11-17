@@ -34,7 +34,9 @@ dashboardRouter.get(
     let monthly = 0;
     let savedMonthly = 0;
     const categories = new Map<string, number>();
-    const upcoming: { id: string; name: string; brandColor: string | null; date: string; amount: number }[] = [];
+    const upcoming: { id: string; name: string; brandColor: string | null; date: string; amount: number; trial: boolean }[] = [];
+    const trialsEnding: { id: string; name: string; brandColor: string | null; date: string; amount: number }[] = [];
+    const in14 = new Date(Date.parse(today) + 14 * 86_400_000).toISOString().slice(0, 10);
 
     for (const sub of subs) {
       const s = serializeSubscription(sub, user.homeCurrency, rates, today);
@@ -48,15 +50,21 @@ dashboardRouter.get(
 
       const anchor = anchorOf(sub);
       if (!anchor) continue;
-      for (const date of renewalsBetween(anchor, sub.cadence, monthStart, monthEnd)) {
+      // Nothing is charged before a free trial ends.
+      const firstCharge = s.trialEndsAt ?? '';
+      for (const date of renewalsBetween(anchor, sub.cadence, monthStart, monthEnd).filter((d) => d >= firstCharge)) {
         dueThisMonth += s.cost.perCharge;
         if (date < today) paidThisMonth += s.cost.perCharge;
       }
       if (s.nextRenewal && s.nextRenewal <= in30) {
-        upcoming.push({ id: s.id, name: s.name, brandColor: s.brandColor, date: s.nextRenewal, amount: s.cost.perCharge });
+        upcoming.push({ id: s.id, name: s.name, brandColor: s.brandColor, date: s.nextRenewal, amount: s.cost.perCharge, trial: s.trialEndsAt === s.nextRenewal });
+      }
+      if (s.trialEndsAt && s.trialEndsAt <= in14) {
+        trialsEnding.push({ id: s.id, name: s.name, brandColor: s.brandColor, date: s.trialEndsAt, amount: s.cost.perCharge });
       }
     }
     upcoming.sort((a, b) => a.date.localeCompare(b.date));
+    trialsEnding.sort((a, b) => a.date.localeCompare(b.date));
     const xp = events.reduce((sum, e) => sum + e.xp, 0);
 
     res.json({
@@ -70,6 +78,8 @@ dashboardRouter.get(
       activeCount: subs.filter((s) => s.status === 'ACTIVE').length,
       cancelledCount: subs.filter((s) => s.status === 'CANCELLED').length,
       upcoming: upcoming.slice(0, 6),
+      trialsEnding,
+      hasSavingsGoal: user.savingsGoalMonthly !== null,
       categories: [...categories.entries()]
         .map(([name, value]) => ({ name, monthly: round2(value) }))
         .sort((a, b) => b.monthly - a.monthly),

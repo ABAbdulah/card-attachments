@@ -1,4 +1,6 @@
 <resources>
     <!-- Matches the light theme background token, so launching shows no white flash. -->
     <color name="app_background">#F8FAFC</color>
+    <!-- App icon and splash icon backdrop (same in both themes). -->
+    <color name="ic_launcher_background">#0B1120</color>
 </resources>

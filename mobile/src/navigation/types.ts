@@ -26,8 +26,10 @@ export type AppStackParamList = {
   Alerts: undefined;
 };
 
-export type AuthScreenProps<T extends keyof AuthStackParamList> = NativeStackScreenProps<AuthStackParamList, T>;
-export type AppScreenProps<T extends keyof AppStackParamList> = NativeStackScreenProps<AppStackParamList, T>;
+export type AuthScreenProps<T extends keyof AuthStackParamList> =
+  NativeStackScreenProps<AuthStackParamList, T>;
+export type AppScreenProps<T extends keyof AppStackParamList> =
+  NativeStackScreenProps<AppStackParamList, T>;
 
 declare global {
   namespace ReactNavigation {

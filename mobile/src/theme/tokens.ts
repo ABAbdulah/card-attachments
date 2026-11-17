@@ -86,7 +86,12 @@ export const typography = {
   bodyStrong: { fontFamily: fonts.semibold, fontSize: 16, lineHeight: 24 },
   label: { fontFamily: fonts.medium, fontSize: 14, lineHeight: 20 },
   caption: { fontFamily: fonts.regular, fontSize: 13, lineHeight: 18 },
-  overline: { fontFamily: fonts.semibold, fontSize: 12, lineHeight: 16, letterSpacing: 0.6 },
+  overline: {
+    fontFamily: fonts.semibold,
+    fontSize: 12,
+    lineHeight: 16,
+    letterSpacing: 0.6,
+  },
 } as const;
 
 export type TypographyVariant = keyof typeof typography;

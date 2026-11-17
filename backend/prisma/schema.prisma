@@ -236,6 +236,8 @@ model Subscription {
   lastChargedLocal Decimal?           @map("last_charged_local") @db.Decimal(14, 2)
   lastChargedAt    DateTime?          @map("last_charged_at") @db.Date
   nextRenewal      DateTime?          @map("next_renewal") @db.Date
+  /// Set while the subscription is a free trial: the day it turns into a paid charge.
+  trialEndsAt      DateTime?          @map("trial_ends_at") @db.Date
   status           SubscriptionStatus @default(ACTIVE)
   source           SubscriptionSource
   confidence       Confidence?

@@ -1,8 +1,26 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { Bell, ChevronRight, Crown, Download, LogOut, Trash2, Wallet } from 'lucide-react-native';
+import {
+  Bell,
+  ChevronRight,
+  Crown,
+  Download,
+  FileText,
+  LogOut,
+  Scale,
+  Trash2,
+  Wallet,
+} from 'lucide-react-native';
 import { useEffect, useState } from 'react';
-import { Alert, Pressable, Share, StyleSheet, View } from 'react-native';
+import {
+  Alert,
+  Linking,
+  Pressable,
+  Share,
+  StyleSheet,
+  View,
+} from 'react-native';
 import { api, errorMessage } from '../../api/client';
+import { API_URL } from '../../config';
 import { useMe, useUpdateMe } from '../../api/queries';
 import { AppText } from '../../components/AppText';
 import { Button } from '../../components/Button';
@@ -30,12 +48,15 @@ export function SettingsScreen({ navigation }: AppScreenProps<'Settings'>) {
   const user = me.data?.user;
 
   useEffect(() => {
-    getPrefs().then((p) => setReminders(p.reminders));
+    getPrefs().then(p => setReminders(p.reminders));
   }, []);
 
   const toggleReminders = async (on: boolean) => {
     if (on && !(await enableReminders())) {
-      toast('Allow notifications in your phone settings to get reminders.', 'error');
+      toast(
+        'Allow notifications in your phone settings to get reminders.',
+        'error',
+      );
       return;
     }
     setReminders(on);
@@ -46,7 +67,12 @@ export function SettingsScreen({ navigation }: AppScreenProps<'Settings'>) {
 
   const signOut = async () => {
     const refreshToken = session.session?.refreshToken;
-    if (refreshToken) await api('/auth/logout', { method: 'POST', body: { refreshToken }, auth: false }).catch(() => undefined);
+    if (refreshToken)
+      await api('/auth/logout', {
+        method: 'POST',
+        body: { refreshToken },
+        auth: false,
+      }).catch(() => undefined);
     qc.clear();
     await session.signOut();
   };
@@ -55,7 +81,10 @@ export function SettingsScreen({ navigation }: AppScreenProps<'Settings'>) {
     setBusy('export');
     try {
       const data = await api<unknown>('/me/export');
-      await Share.share({ title: 'SubTrack data export', message: JSON.stringify(data, null, 2) });
+      await Share.share({
+        title: 'SubTrack data export',
+        message: JSON.stringify(data, null, 2),
+      });
     } catch (err) {
       toast(errorMessage(err), 'error');
     } finally {
@@ -99,16 +128,41 @@ export function SettingsScreen({ navigation }: AppScreenProps<'Settings'>) {
               Signed in with an email code
             </AppText>
           </View>
-          <Chip label={user?.plan === 'PRO' ? 'Pro' : 'Free'} tone={user?.plan === 'PRO' ? 'reward' : 'textMuted'} />
+          <Chip
+            label={user?.plan === 'PRO' ? 'Pro' : 'Free'}
+            tone={user?.plan === 'PRO' ? 'reward' : 'textMuted'}
+          />
         </View>
         {user?.plan !== 'PRO' ? (
-          <Row icon={Crown} label="Upgrade to Pro" detail="Unlimited scans and subscriptions" onPress={() => navigation.navigate('Paywall')} tint={colors.reward} />
+          <Row
+            icon={Crown}
+            label="Upgrade to Pro"
+            detail="Unlimited scans and subscriptions"
+            onPress={() => navigation.navigate('Paywall')}
+            tint={colors.reward}
+          />
         ) : null}
       </Surface>
 
       <Surface padded={false}>
-        <Row icon={Wallet} label="Currency" detail={user?.homeCurrency ?? ''} onPress={() => setCurrencyOpen(true)} first />
-        <View style={[styles.row, { padding: spacing.lg, gap: spacing.md, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border }]}>
+        <Row
+          icon={Wallet}
+          label="Currency"
+          detail={user?.homeCurrency ?? ''}
+          onPress={() => setCurrencyOpen(true)}
+          first
+        />
+        <View
+          style={[
+            styles.row,
+            {
+              padding: spacing.lg,
+              gap: spacing.md,
+              borderTopWidth: StyleSheet.hairlineWidth,
+              borderTopColor: colors.border,
+            },
+          ]}
+        >
           <Bell color={colors.textMuted} size={20} />
           <View style={styles.flex}>
             <AppText variant="body">Renewal reminders</AppText>
@@ -116,31 +170,82 @@ export function SettingsScreen({ navigation }: AppScreenProps<'Settings'>) {
               3 days before each charge
             </AppText>
           </View>
-          <Toggle value={reminders} onChange={toggleReminders} accessibilityLabel="Renewal reminders" />
+          <Toggle
+            value={reminders}
+            onChange={toggleReminders}
+            accessibilityLabel="Renewal reminders"
+          />
         </View>
       </Surface>
 
       <View style={{ gap: spacing.sm }}>
         <AppText variant="heading">Your data</AppText>
         <AppText variant="caption" color="textMuted">
-          Statement files are never stored. We keep your card payments, subscriptions and progress so they follow you to a new phone.
+          Statement files are never stored. We keep your card payments,
+          subscriptions and progress so they follow you to a new phone.
         </AppText>
         <Surface padded={false}>
-          <Row icon={Download} label={busy === 'export' ? 'Preparing export…' : 'Export my data'} onPress={exportData} first />
-          <Row icon={Trash2} label={busy === 'delete' ? 'Deleting…' : 'Delete my account'} onPress={deleteAccount} tint={colors.danger} />
+          <Row
+            icon={Download}
+            label={busy === 'export' ? 'Preparing export…' : 'Export my data'}
+            onPress={exportData}
+            first
+          />
+          <Row
+            icon={Trash2}
+            label={busy === 'delete' ? 'Deleting…' : 'Delete my account'}
+            onPress={deleteAccount}
+            tint={colors.danger}
+          />
+        </Surface>
+        <Surface padded={false}>
+          <Row
+            icon={FileText}
+            label="Privacy policy"
+            onPress={() =>
+              Linking.openURL(`${API_URL}/privacy`).catch(() =>
+                toast('Could not open the link.', 'error'),
+              )
+            }
+            first
+          />
+          <Row
+            icon={Scale}
+            label="Terms of use"
+            onPress={() =>
+              Linking.openURL(`${API_URL}/terms`).catch(() =>
+                toast('Could not open the link.', 'error'),
+              )
+            }
+          />
         </Surface>
       </View>
 
-      <Button label="Sign out" variant="secondary" icon={LogOut} onPress={signOut} />
+      <Button
+        label="Sign out"
+        variant="secondary"
+        icon={LogOut}
+        onPress={signOut}
+      />
       <AppText variant="caption" color="textMuted" align="center">
         SubTrack 1.0.0
       </AppText>
 
-      <Sheet visible={currencyOpen} onClose={() => setCurrencyOpen(false)} title="Currency">
+      <Sheet
+        visible={currencyOpen}
+        onClose={() => setCurrencyOpen(false)}
+        title="Currency"
+      >
         <CurrencyList
           value={user?.homeCurrency ?? 'PKR'}
-          onChange={(code) =>
-            update.mutate({ homeCurrency: code }, { onSuccess: () => setCurrencyOpen(false), onError: (e) => toast(errorMessage(e), 'error') })
+          onChange={code =>
+            update.mutate(
+              { homeCurrency: code },
+              {
+                onSuccess: () => setCurrencyOpen(false),
+                onError: e => toast(errorMessage(e), 'error'),
+              },
+            )
           }
         />
       </Sheet>
@@ -148,7 +253,21 @@ export function SettingsScreen({ navigation }: AppScreenProps<'Settings'>) {
   );
 }
 
-function Row({ icon: Icon, label, detail, onPress, tint, first }: { icon: typeof Bell; label: string; detail?: string; onPress: () => void; tint?: string; first?: boolean }) {
+function Row({
+  icon: Icon,
+  label,
+  detail,
+  onPress,
+  tint,
+  first,
+}: {
+  icon: typeof Bell;
+  label: string;
+  detail?: string;
+  onPress: () => void;
+  tint?: string;
+  first?: boolean;
+}) {
   const { colors, spacing } = useTheme();
   return (
     <Pressable
@@ -157,7 +276,13 @@ function Row({ icon: Icon, label, detail, onPress, tint, first }: { icon: typeof
       accessibilityLabel={detail ? `${label}, ${detail}` : label}
       style={({ pressed }) => [
         styles.row,
-        { padding: spacing.lg, gap: spacing.md, borderTopWidth: first ? 0 : StyleSheet.hairlineWidth, borderTopColor: colors.border, backgroundColor: pressed ? colors.surfaceRaised : 'transparent' },
+        {
+          padding: spacing.lg,
+          gap: spacing.md,
+          borderTopWidth: first ? 0 : StyleSheet.hairlineWidth,
+          borderTopColor: colors.border,
+          backgroundColor: pressed ? colors.surfaceRaised : 'transparent',
+        },
       ]}
     >
       <Icon color={tint ?? colors.textMuted} size={20} />

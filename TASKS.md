@@ -85,7 +85,7 @@ Status: `[x]` done and tested, `[~]` built but waiting on an account, key or mor
 - [x] **P5-T2** 11 badges evaluated on the server
 - [x] **P5-T3** Progress screen: savings ring, level, streak, badge grid, recent XP
 - [x] **P5-T4** Celebration: haptic, counting totals, confetti, +XP, new badges
-- [ ] **P5-T5** First-run checklist on Home
+- [x] **P5-T5** First-run checklist on Home: scan, review, reminders, first cancel, savings goal, with XP hints; hides when done or dismissed
 - [~] **P5-T6** Share savings (text share works; image card not built)
 
 ## Phase 6: Retention
@@ -95,16 +95,16 @@ Status: `[x]` done and tested, `[~]` built but waiting on an account, key or mor
 - [x] **P6-T3** Cancel guides with billing links for catalog services
 - [x] **P6-T4** Cards tab: every merchant that charged the card, filters, statements list
 - [ ] **P6-T5** OCR for scanned statements and photos
-- [ ] **P6-T6** Free-trial end alerts
+- [x] **P6-T6** Free trials: mark a subscription as a trial with its end date; reminder 2 days before, "trials ending" card on Home, no charge counted before the trial ends, trial cleared when a statement shows the first charge
 
 ## Phase 7: Monetization and launch
 
 - [~] **P7-T1** RevenueCat webhook endpoint built; needs RevenueCat account, store products and the mobile SDK
 - [x] **P7-T2** Paywall screen and free-plan limits (1 scan, 5 manual subscriptions), test-account Pro switch
 - [ ] **P7-T3** Analytics (PostHog)
-- [ ] **P7-T4** Privacy policy and terms
-- [ ] **P7-T5** App icon, splash screen, final name
+- [~] **P7-T4** Privacy policy and terms drafted (`backend/legal/`), served at `/privacy` and `/terms`, linked from Settings. Fill in company name, address, support email and country, and have them reviewed before launch.
+- [~] **P7-T5** App icon (Android adaptive and legacy, iOS, Play Store 512), notification icon and Android 12+ splash done. Final app name still to decide.
 - [ ] **P7-T6** iOS cloud build and TestFlight
-- [ ] **P7-T7** Android release signing and Play internal testing
+- [~] **P7-T7** Release signing set up with an upload key (`mobile/android/app/subtrack-upload.keystore`, password in `mobile/android/keystore.properties`, both git-ignored). Play internal testing needs a Google Play developer account and the deployed API.
 - [ ] **P7-T8** Store listings
 - [ ] **P7-T9** Beta round

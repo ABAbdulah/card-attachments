@@ -1,5 +1,11 @@
 import type { LucideIcon } from 'lucide-react-native';
-import { ActivityIndicator, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import {
+  ActivityIndicator,
+  StyleSheet,
+  View,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
 import { useTheme } from '../theme';
 import { AppText } from './AppText';
 import { PressableScale } from './Pressable';
@@ -16,11 +22,29 @@ type Props = {
   accessibilityHint?: string;
 };
 
-export function Button({ label, onPress, variant = 'primary', icon: Icon, loading, disabled, compact, style, accessibilityHint }: Props) {
+export function Button({
+  label,
+  onPress,
+  variant = 'primary',
+  icon: Icon,
+  loading,
+  disabled,
+  compact,
+  style,
+  accessibilityHint,
+}: Props) {
   const { colors, radius, spacing, touchTarget } = useTheme();
   const palette = {
-    primary: { bg: colors.primary, fg: colors.onPrimary, border: colors.primary },
-    secondary: { bg: colors.surfaceRaised, fg: colors.text, border: colors.border },
+    primary: {
+      bg: colors.primary,
+      fg: colors.onPrimary,
+      border: colors.primary,
+    },
+    secondary: {
+      bg: colors.surfaceRaised,
+      fg: colors.text,
+      border: colors.border,
+    },
     ghost: { bg: 'transparent', fg: colors.primary, border: 'transparent' },
     danger: { bg: 'transparent', fg: colors.danger, border: colors.danger },
   }[variant];
@@ -51,8 +75,14 @@ export function Button({ label, onPress, variant = 'primary', icon: Icon, loadin
         <ActivityIndicator color={palette.fg} />
       ) : (
         <View style={[styles.row, { gap: spacing.sm }]}>
-          {Icon ? <Icon color={palette.fg} size={18} strokeWidth={2.2} /> : null}
-          <AppText variant="bodyStrong" style={{ color: palette.fg }} numberOfLines={1}>
+          {Icon ? (
+            <Icon color={palette.fg} size={18} strokeWidth={2.2} />
+          ) : null}
+          <AppText
+            variant="bodyStrong"
+            style={{ color: palette.fg }}
+            numberOfLines={1}
+          >
             {label}
           </AppText>
         </View>

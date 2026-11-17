@@ -24,11 +24,17 @@ export const CURRENCIES: { code: string; name: string }[] = [
   { code: 'TRY', name: 'Turkish lira' },
 ];
 
-export function CurrencyList({ value, onChange }: { value: string; onChange: (code: string) => void }) {
+export function CurrencyList({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (code: string) => void;
+}) {
   const { colors, radius, spacing } = useTheme();
   return (
     <View style={{ gap: spacing.sm }} accessibilityRole="radiogroup">
-      {CURRENCIES.map((c) => {
+      {CURRENCIES.map(c => {
         const selected = c.code === value;
         return (
           <Pressable
@@ -38,7 +44,13 @@ export function CurrencyList({ value, onChange }: { value: string; onChange: (co
             accessibilityState={{ selected }}
             style={[
               styles.row,
-              { borderRadius: radius.md, padding: spacing.md, backgroundColor: colors.surface, borderColor: selected ? colors.primary : colors.border, gap: spacing.md },
+              {
+                borderRadius: radius.md,
+                padding: spacing.md,
+                backgroundColor: colors.surface,
+                borderColor: selected ? colors.primary : colors.border,
+                gap: spacing.md,
+              },
             ]}
           >
             <AppText variant="bodyStrong" style={styles.code}>
@@ -67,7 +79,12 @@ export function OnboardingScreen() {
         <Button
           label="Continue"
           loading={update.isPending}
-          onPress={() => update.mutate({ homeCurrency: currency, onboarded: true }, { onError: (e) => toast(errorMessage(e), 'error') })}
+          onPress={() =>
+            update.mutate(
+              { homeCurrency: currency, onboarded: true },
+              { onError: e => toast(errorMessage(e), 'error') },
+            )
+          }
         />
       }
     >
@@ -78,6 +95,11 @@ export function OnboardingScreen() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  row: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, minHeight: 52 },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    minHeight: 52,
+  },
   code: { width: 44 },
 });

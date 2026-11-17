@@ -14,7 +14,7 @@ type SessionState = {
 };
 
 /** Tokens live in the iOS Keychain / Android Keystore, never in plain storage. */
-export const useSession = create<SessionState>((set) => ({
+export const useSession = create<SessionState>(set => ({
   status: 'loading',
   session: null,
 
@@ -22,7 +22,10 @@ export const useSession = create<SessionState>((set) => ({
     try {
       const stored = await Keychain.getGenericPassword({ service: SERVICE });
       if (stored) {
-        set({ status: 'signedIn', session: JSON.parse(stored.password) as Session });
+        set({
+          status: 'signedIn',
+          session: JSON.parse(stored.password) as Session,
+        });
         return;
       }
     } catch {
@@ -31,13 +34,17 @@ export const useSession = create<SessionState>((set) => ({
     set({ status: 'signedOut', session: null });
   },
 
-  signIn: async (session) => {
-    await Keychain.setGenericPassword('session', JSON.stringify(session), { service: SERVICE });
+  signIn: async session => {
+    await Keychain.setGenericPassword('session', JSON.stringify(session), {
+      service: SERVICE,
+    });
     set({ status: 'signedIn', session });
   },
 
-  update: async (session) => {
-    await Keychain.setGenericPassword('session', JSON.stringify(session), { service: SERVICE });
+  update: async session => {
+    await Keychain.setGenericPassword('session', JSON.stringify(session), {
+      service: SERVICE,
+    });
     set({ session });
   },
 

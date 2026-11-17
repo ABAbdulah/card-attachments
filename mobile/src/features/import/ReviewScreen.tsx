@@ -19,9 +19,21 @@ import { celebrateRewards, toast } from '../../store/ui';
 import { useTheme } from '../../theme';
 
 const GROUPS: { confidence: Confidence; title: string; body: string }[] = [
-  { confidence: 'CONFIRMED', title: 'Charged regularly', body: 'Same merchant on a steady cycle.' },
-  { confidence: 'LIKELY', title: 'Probably subscriptions', body: 'Known services or repeating amounts.' },
-  { confidence: 'CHECK', title: 'Your call', body: 'Could be a one-off, a yearly plan, or already cancelled.' },
+  {
+    confidence: 'CONFIRMED',
+    title: 'Charged regularly',
+    body: 'Same merchant on a steady cycle.',
+  },
+  {
+    confidence: 'LIKELY',
+    title: 'Probably subscriptions',
+    body: 'Known services or repeating amounts.',
+  },
+  {
+    confidence: 'CHECK',
+    title: 'Your call',
+    body: 'Could be a one-off, a yearly plan, or already cancelled.',
+  },
 ];
 
 type Decision = boolean | undefined;
@@ -35,17 +47,20 @@ export function ReviewScreen({ navigation }: AppScreenProps<'Review'>) {
   // Strong matches start ticked; the user still sees and can untick every one.
   useEffect(() => {
     if (!data) return;
-    setDecisions((prev) => {
+    setDecisions(prev => {
       const next = { ...prev };
       for (const c of data.candidates) {
-        if (!(c.id in next)) next[c.id] = c.confidence === 'CHECK' ? undefined : true;
+        if (!(c.id in next))
+          next[c.id] = c.confidence === 'CHECK' ? undefined : true;
       }
       return next;
     });
   }, [data]);
 
   const candidates = useMemo(() => data?.candidates ?? [], [data]);
-  const decided = Object.entries(decisions).filter(([, v]) => v !== undefined) as [string, boolean][];
+  const decided = Object.entries(decisions).filter(
+    ([, v]) => v !== undefined,
+  ) as [string, boolean][];
   const keepCount = decided.filter(([, v]) => v).length;
   const undecided = candidates.length - decided.length;
 
@@ -57,12 +72,14 @@ export function ReviewScreen({ navigation }: AppScreenProps<'Review'>) {
         onSuccess: ({ rewards, subscriptions }) => {
           navigation.goBack();
           celebrateRewards(
-            subscriptions.length ? `${subscriptions.length} added to your list` : 'Review saved',
+            subscriptions.length
+              ? `${subscriptions.length} added to your list`
+              : 'Review saved',
             rewards,
             undecided > 0 ? `${undecided} left to decide later.` : undefined,
           );
         },
-        onError: (err) => toast(errorMessage(err), 'error'),
+        onError: err => toast(errorMessage(err), 'error'),
       },
     );
   };
@@ -75,7 +92,13 @@ export function ReviewScreen({ navigation }: AppScreenProps<'Review'>) {
       footer={
         candidates.length ? (
           <Button
-            label={keepCount ? `Add ${keepCount} ${keepCount === 1 ? 'subscription' : 'subscriptions'}` : 'Save decisions'}
+            label={
+              keepCount
+                ? `Add ${keepCount} ${
+                    keepCount === 1 ? 'subscription' : 'subscriptions'
+                  }`
+                : 'Save decisions'
+            }
             onPress={save}
             loading={review.isPending}
             disabled={decided.length === 0}
@@ -88,10 +111,17 @@ export function ReviewScreen({ navigation }: AppScreenProps<'Review'>) {
       ) : error ? (
         <ErrorState error={error} onRetry={refetch} />
       ) : candidates.length === 0 ? (
-        <EmptyState icon={PartyPopper} title="All reviewed" body="There is nothing waiting for you. Scan another statement any time." action={<Button label="Done" onPress={() => navigation.goBack()} />} />
+        <EmptyState
+          icon={PartyPopper}
+          title="All reviewed"
+          body="There is nothing waiting for you. Scan another statement any time."
+          action={<Button label="Done" onPress={() => navigation.goBack()} />}
+        />
       ) : (
-        GROUPS.map((group) => {
-          const items = candidates.filter((c) => c.confidence === group.confidence);
+        GROUPS.map(group => {
+          const items = candidates.filter(
+            c => c.confidence === group.confidence,
+          );
           if (!items.length) return null;
           return (
             <View key={group.confidence} style={{ gap: spacing.sm }}>
@@ -101,14 +131,17 @@ export function ReviewScreen({ navigation }: AppScreenProps<'Review'>) {
                   {group.body}
                 </AppText>
               </View>
-              {items.map((c) => (
+              {items.map(c => (
                 <CandidateCard
                   key={c.id}
                   candidate={c}
                   decision={decisions[c.id]}
-                  onDecide={(value) => {
+                  onDecide={value => {
                     haptics.tap();
-                    setDecisions((d) => ({ ...d, [c.id]: d[c.id] === value ? undefined : value }));
+                    setDecisions(d => ({
+                      ...d,
+                      [c.id]: d[c.id] === value ? undefined : value,
+                    }));
                   }}
                 />
               ))}
@@ -120,12 +153,26 @@ export function ReviewScreen({ navigation }: AppScreenProps<'Review'>) {
   );
 }
 
-function CandidateCard({ candidate: c, decision, onDecide }: { candidate: Candidate; decision: Decision; onDecide: (accept: boolean) => void }) {
+function CandidateCard({
+  candidate: c,
+  decision,
+  onDecide,
+}: {
+  candidate: Candidate;
+  decision: Decision;
+  onDecide: (accept: boolean) => void;
+}) {
   const { colors, spacing, radius } = useTheme();
   const border = decision === true ? colors.success : colors.border;
 
   return (
-    <Surface style={{ gap: spacing.md, borderColor: border, opacity: decision === false ? 0.6 : 1 }}>
+    <Surface
+      style={{
+        gap: spacing.md,
+        borderColor: border,
+        opacity: decision === false ? 0.6 : 1,
+      }}
+    >
       <View style={[styles.row, { gap: spacing.md }]}>
         <MerchantAvatar name={c.name} color={c.brandColor} size={40} />
         <View style={styles.flex}>
@@ -133,7 +180,8 @@ function CandidateCard({ candidate: c, decision, onDecide }: { candidate: Candid
             {c.name}
           </AppText>
           <AppText variant="caption" color="textMuted">
-            Last charged {formatDay(c.lastCharge)} · {c.chargeCount} {c.chargeCount === 1 ? 'charge' : 'charges'}
+            Last charged {formatDay(c.lastCharge)} · {c.chargeCount}{' '}
+            {c.chargeCount === 1 ? 'charge' : 'charges'}
           </AppText>
         </View>
         <View style={styles.right}>
@@ -142,7 +190,9 @@ function CandidateCard({ candidate: c, decision, onDecide }: { candidate: Candid
           </AppText>
           {c.priceOriginal && c.originalCurrency ? (
             <AppText variant="caption" color="textMuted" tabular>
-              {formatMoney(c.priceOriginal, c.originalCurrency, { exact: true })}
+              {formatMoney(c.priceOriginal, c.originalCurrency, {
+                exact: true,
+              })}
             </AppText>
           ) : null}
         </View>
@@ -155,14 +205,42 @@ function CandidateCard({ candidate: c, decision, onDecide }: { candidate: Candid
         {c.category ? <Chip label={c.category} /> : null}
       </View>
       <View style={[styles.row, { gap: spacing.sm }]}>
-        <Choice label="I pay for this" icon={Check} active={decision === true} tone={colors.success} onPress={() => onDecide(true)} radius={radius.full} />
-        <Choice label="Not a subscription" icon={X} active={decision === false} tone={colors.textMuted} onPress={() => onDecide(false)} radius={radius.full} />
+        <Choice
+          label="I pay for this"
+          icon={Check}
+          active={decision === true}
+          tone={colors.success}
+          onPress={() => onDecide(true)}
+          radius={radius.full}
+        />
+        <Choice
+          label="Not a subscription"
+          icon={X}
+          active={decision === false}
+          tone={colors.textMuted}
+          onPress={() => onDecide(false)}
+          radius={radius.full}
+        />
       </View>
     </Surface>
   );
 }
 
-function Choice({ label, icon: Icon, active, tone, onPress, radius }: { label: string; icon: typeof Check; active: boolean; tone: string; onPress: () => void; radius: number }) {
+function Choice({
+  label,
+  icon: Icon,
+  active,
+  tone,
+  onPress,
+  radius,
+}: {
+  label: string;
+  icon: typeof Check;
+  active: boolean;
+  tone: string;
+  onPress: () => void;
+  radius: number;
+}) {
   const { colors, spacing } = useTheme();
   return (
     <PressableScale
@@ -172,11 +250,24 @@ function Choice({ label, icon: Icon, active, tone, onPress, radius }: { label: s
       accessibilityLabel={label}
       style={[
         styles.choice,
-        { borderRadius: radius, gap: spacing.xs, borderColor: active ? tone : colors.border, backgroundColor: active ? `${tone}26` : 'transparent' },
+        {
+          borderRadius: radius,
+          gap: spacing.xs,
+          borderColor: active ? tone : colors.border,
+          backgroundColor: active ? `${tone}26` : 'transparent',
+        },
       ]}
     >
-      <Icon size={16} color={active ? tone : colors.textMuted} strokeWidth={2.5} />
-      <AppText variant="label" style={{ color: active ? tone : colors.textMuted }} numberOfLines={1}>
+      <Icon
+        size={16}
+        color={active ? tone : colors.textMuted}
+        strokeWidth={2.5}
+      />
+      <AppText
+        variant="label"
+        style={{ color: active ? tone : colors.textMuted }}
+        numberOfLines={1}
+      >
         {label}
       </AppText>
     </PressableScale>
@@ -187,5 +278,12 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   row: { flexDirection: 'row', alignItems: 'center' },
   right: { alignItems: 'flex-end' },
-  choice: { flex: 1, minHeight: 44, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
+  choice: {
+    flex: 1,
+    minHeight: 44,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+  },
 });

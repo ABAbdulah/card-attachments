@@ -10,7 +10,10 @@ type Props = {
   selected?: boolean;
   onPress?: () => void;
   icon?: LucideIcon;
-  tone?: keyof Pick<ColorTokens, 'primary' | 'success' | 'reward' | 'danger' | 'textMuted'>;
+  tone?: keyof Pick<
+    ColorTokens,
+    'primary' | 'success' | 'reward' | 'danger' | 'textMuted'
+  >;
 };
 
 /** Selectable pill, or a static status tag when it has no onPress. */
@@ -19,8 +22,16 @@ export function Chip({ label, selected, onPress, icon: Icon, tone }: Props) {
   const accent = tone ? colors[tone] : colors.primary;
   const fg = selected ? colors.onPrimary : tone ? accent : colors.text;
   const style = {
-    backgroundColor: selected ? colors.primary : tone ? `${accent}1F` : colors.surfaceRaised,
-    borderColor: selected ? colors.primary : tone ? 'transparent' : colors.border,
+    backgroundColor: selected
+      ? colors.primary
+      : tone
+      ? `${accent}1F`
+      : colors.surfaceRaised,
+    borderColor: selected
+      ? colors.primary
+      : tone
+      ? 'transparent'
+      : colors.border,
     borderRadius: radius.full,
     paddingHorizontal: spacing.md,
     gap: spacing.xs,
@@ -34,7 +45,8 @@ export function Chip({ label, selected, onPress, icon: Icon, tone }: Props) {
     </>
   );
 
-  if (!onPress) return <View style={[styles.chip, styles.static, style]}>{content}</View>;
+  if (!onPress)
+    return <View style={[styles.chip, styles.static, style]}>{content}</View>;
   return (
     <PressableScale
       onPress={onPress}
@@ -49,7 +61,12 @@ export function Chip({ label, selected, onPress, icon: Icon, tone }: Props) {
 }
 
 const styles = StyleSheet.create({
-  chip: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, alignSelf: 'flex-start' },
+  chip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    alignSelf: 'flex-start',
+  },
   static: { minHeight: 26 },
   interactive: { minHeight: 38 },
 });

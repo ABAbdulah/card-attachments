@@ -27,12 +27,19 @@ export function useToggleSubscription(currency: string) {
       {
         onSuccess: ({ rewards }) => {
           if (status === 'CANCELLED') {
-            celebrateRewards(`${sub.name} cancelled`, rewards, `You’ll save ${formatMoney(sub.cost.monthly, currency)} a month. We’ll check your next statement to confirm.`);
+            celebrateRewards(
+              `${sub.name} cancelled`,
+              rewards,
+              `You’ll save ${formatMoney(
+                sub.cost.monthly,
+                currency,
+              )} a month. We’ll check your next statement to confirm.`,
+            );
           } else {
             toast(`${sub.name} is active again`);
           }
         },
-        onError: (err) => toast(errorMessage(err), 'error'),
+        onError: err => toast(errorMessage(err), 'error'),
       },
     );
 
@@ -42,18 +49,28 @@ export function useToggleSubscription(currency: string) {
   };
 
   const sheet = (
-    <Sheet visible={pending !== null} onClose={() => setPending(null)} title={pending ? `Cancel ${pending.name}?` : undefined}>
+    <Sheet
+      visible={pending !== null}
+      onClose={() => setPending(null)}
+      title={pending ? `Cancel ${pending.name}?` : undefined}
+    >
       {pending ? (
         <View style={{ gap: spacing.md }}>
           <AppText variant="body" color="textMuted">
-            We can’t cancel it for you. Cancel it with {pending.name} first, then mark it here. We’ll warn you if your next statement still shows a charge.
+            We can’t cancel it for you. Cancel it with {pending.name} first,
+            then mark it here. We’ll warn you if your next statement still shows
+            a charge.
           </AppText>
           {pending.manageUrl ? (
             <Button
               label={`Open ${pending.name} billing`}
               variant="secondary"
               icon={ExternalLink}
-              onPress={() => Linking.openURL(pending.manageUrl!).catch(() => toast('Could not open the link.', 'error'))}
+              onPress={() =>
+                Linking.openURL(pending.manageUrl!).catch(() =>
+                  toast('Could not open the link.', 'error'),
+                )
+              }
             />
           ) : null}
           <Button
@@ -64,7 +81,11 @@ export function useToggleSubscription(currency: string) {
               apply(sub, 'CANCELLED');
             }}
           />
-          <Button label="Not now" variant="ghost" onPress={() => setPending(null)} />
+          <Button
+            label="Not now"
+            variant="ghost"
+            onPress={() => setPending(null)}
+          />
         </View>
       ) : null}
     </Sheet>

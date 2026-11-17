@@ -1,6 +1,9 @@
 import { trigger } from 'react-native-haptic-feedback';
 
-const options = { enableVibrateFallback: false, ignoreAndroidSystemSettings: false };
+const options = {
+  enableVibrateFallback: false,
+  ignoreAndroidSystemSettings: false,
+};
 
 export const haptics = {
   tap: () => trigger('selection', options),

@@ -2,7 +2,14 @@ import { ChevronRight, Plus, Search } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { ApiError, errorMessage } from '../../api/client';
-import { useCards, useCreateSubscription, useMe, useMerchants, useSubscription, useUpdateSubscription } from '../../api/queries';
+import {
+  useCards,
+  useCreateSubscription,
+  useMe,
+  useMerchants,
+  useSubscription,
+  useUpdateSubscription,
+} from '../../api/queries';
 import type { Cadence, Merchant } from '../../api/types';
 import { AppText } from '../../components/AppText';
 import { Button } from '../../components/Button';
@@ -11,9 +18,16 @@ import { Input } from '../../components/Input';
 import { MerchantAvatar } from '../../components/MerchantAvatar';
 import { Screen } from '../../components/Screen';
 import { Segmented } from '../../components/Segmented';
+import { Toggle } from '../../components/Toggle';
 import { SkeletonList } from '../../components/States';
 import { Surface } from '../../components/Surface';
-import { addDays, addMonths, formatMoney, isValidIsoDay, todayIso } from '../../lib/format';
+import {
+  addDays,
+  addMonths,
+  formatMoney,
+  isValidIsoDay,
+  todayIso,
+} from '../../lib/format';
 import type { AppScreenProps } from '../../navigation/types';
 import { celebrateRewards, toast } from '../../store/ui';
 import { useTheme } from '../../theme';
@@ -26,11 +40,16 @@ type Draft = {
   currency: string;
   cadence: Cadence;
   nextRenewal: string;
+  /** Free trial: the date it becomes paid (also the first charge). */
+  trial: boolean;
   cardId: string | null;
   notes: string;
 };
 
-export function AddSubscriptionScreen({ route, navigation }: AppScreenProps<'AddSubscription'>) {
+export function AddSubscriptionScreen({
+  route,
+  navigation,
+}: AppScreenProps<'AddSubscription'>) {
   const editingId = route.params?.subscriptionId;
   const me = useMe();
   const home = me.data?.user.homeCurrency ?? 'PKR';
@@ -48,7 +67,8 @@ export function AddSubscriptionScreen({ route, navigation }: AppScreenProps<'Add
         price: String(s.priceOriginal),
         currency: s.currency,
         cadence: s.cadence,
-        nextRenewal: s.nextRenewal ?? todayIso(),
+        nextRenewal: s.trialEndsAt ?? s.nextRenewal ?? todayIso(),
+        trial: s.trialEndsAt !== null,
         cardId: s.card?.id ?? null,
         notes: s.notes ?? '',
       });
@@ -67,7 +87,7 @@ export function AddSubscriptionScreen({ route, navigation }: AppScreenProps<'Add
     return (
       <CatalogPicker
         home={home}
-        onPick={(m) =>
+        onPick={m =>
           setDraft({
             merchantSlug: m?.slug,
             brandColor: m?.brandColor,
@@ -76,6 +96,7 @@ export function AddSubscriptionScreen({ route, navigation }: AppScreenProps<'Add
             currency: m?.typicalCurrency ?? home,
             cadence: m?.typicalCadence ?? 'MONTHLY',
             nextRenewal: addMonths(todayIso(), 1),
+            trial: false,
             cardId: null,
             notes: '',
           })
@@ -91,57 +112,93 @@ export function AddSubscriptionScreen({ route, navigation }: AppScreenProps<'Add
       home={home}
       editingId={editingId}
       onDone={() => navigation.goBack()}
-      onPlanLimit={(reason) => navigation.replace('Paywall', { reason })}
+      onPlanLimit={reason => navigation.replace('Paywall', { reason })}
     />
   );
 }
 
-function CatalogPicker({ home, onPick }: { home: string; onPick: (m: (Merchant & { custom?: string }) | null) => void }) {
+function CatalogPicker({
+  home,
+  onPick,
+}: {
+  home: string;
+  onPick: (m: (Merchant & { custom?: string }) | null) => void;
+}) {
   const { colors, spacing } = useTheme();
   const [query, setQuery] = useState('');
   const { data, isLoading } = useMerchants(query.trim());
   const merchants = data?.merchants ?? [];
+  const exactMatch = merchants.some(
+    m => m.name.toLowerCase() === query.trim().toLowerCase(),
+  );
 
   return (
-    <Screen leading="close" title="Add a subscription" subtitle="Pick a service, or add your own.">
-      <Input icon={Search} value={query} onChangeText={setQuery} placeholder="Search Netflix, ChatGPT, Spotify…" autoFocus returnKeyType="search" accessibilityLabel="Search services" />
-      {query.trim() ? (
-        <Surface
-          onPress={() => onPick({ custom: query.trim(), name: query.trim() } as Merchant & { custom: string })}
-          accessibilityLabel={`Add ${query.trim()} as a custom subscription`}
-          style={[styles.row, { gap: spacing.md }]}
-        >
-          <Plus size={20} color={colors.primary} />
-          <AppText variant="bodyStrong" style={styles.flex}>
-            Add “{query.trim()}”
-          </AppText>
-        </Surface>
-      ) : null}
+    <Screen
+      leading="close"
+      title="Add a subscription"
+      subtitle="Pick a service, or add your own."
+    >
+      <Input
+        icon={Search}
+        value={query}
+        onChangeText={setQuery}
+        placeholder="Search Netflix, ChatGPT, Spotify…"
+        autoFocus
+        returnKeyType="search"
+        accessibilityLabel="Search services"
+      />
       {isLoading ? (
         <SkeletonList />
       ) : (
         <View style={{ gap: spacing.sm }}>
-          {merchants.map((m) => (
-            <Surface key={m.slug} onPress={() => onPick(m)} accessibilityLabel={m.name} padded={false} style={[styles.row, { padding: spacing.md, gap: spacing.md }]}>
+          {merchants.map(m => (
+            <Surface
+              key={m.slug}
+              onPress={() => onPick(m)}
+              accessibilityLabel={m.name}
+              padded={false}
+              style={[styles.row, { padding: spacing.md, gap: spacing.md }]}
+            >
               <MerchantAvatar name={m.name} color={m.brandColor} size={40} />
               <View style={styles.flex}>
                 <AppText variant="bodyStrong">{m.name}</AppText>
                 <AppText variant="caption" color="textMuted">
                   {m.category}
-                  {m.typicalPrice && m.typicalCurrency ? ` · from ${formatMoney(m.typicalPrice, m.typicalCurrency, { exact: true })}` : ''}
+                  {m.typicalPrice && m.typicalCurrency
+                    ? ` · from ${formatMoney(
+                        m.typicalPrice,
+                        m.typicalCurrency,
+                        { exact: true },
+                      )}`
+                    : ''}
                 </AppText>
               </View>
               <ChevronRight size={18} color={colors.textMuted} />
             </Surface>
           ))}
-          {merchants.length === 0 && query.trim() ? (
-            <AppText variant="body" color="textMuted" align="center">
-              Not in our list. Add it as your own above.
-            </AppText>
+          {query.trim() && !exactMatch ? (
+            <Surface
+              onPress={() =>
+                onPick({
+                  custom: query.trim(),
+                  name: query.trim(),
+                } as Merchant & { custom: string })
+              }
+              accessibilityLabel={`Add ${query.trim()} as a custom subscription`}
+              style={[styles.row, { gap: spacing.md }]}
+            >
+              <Plus size={20} color={colors.primary} />
+              <AppText variant="bodyStrong" style={styles.flex}>
+                Add “{query.trim()}”
+              </AppText>
+            </Surface>
           ) : null}
-          {!query.trim() ? null : (
+
+          {!query.trim() || merchants.length === 0 ? null : (
             <AppText variant="caption" color="textMuted" align="center">
-              Prices are typical list prices in {home === 'USD' ? 'USD' : 'their original currency'}. You can change them.
+              Prices are typical list prices in{' '}
+              {home === 'USD' ? 'USD' : 'their original currency'}. You can
+              change them.
             </AppText>
           )}
         </View>
@@ -176,7 +233,9 @@ function SubscriptionForm({
   const errors = {
     name: draft.name.trim() ? null : 'Give it a name.',
     price: price > 0 ? null : 'Enter the price you pay each time.',
-    date: isValidIsoDay(draft.nextRenewal) ? null : 'Use the format YYYY-MM-DD.',
+    date: isValidIsoDay(draft.nextRenewal)
+      ? null
+      : 'Use the format YYYY-MM-DD.',
   };
   const valid = !errors.name && !errors.price && !errors.date;
   const currencies = [...new Set([home, 'USD', draft.currency])];
@@ -191,6 +250,7 @@ function SubscriptionForm({
       currency: draft.currency,
       cadence: draft.cadence,
       nextRenewal: draft.nextRenewal,
+      trialEndsAt: draft.trial ? draft.nextRenewal : null,
       cardId: draft.cardId,
       notes: draft.notes.trim() || null,
     };
@@ -227,7 +287,13 @@ function SubscriptionForm({
     <Screen
       leading="close"
       title={editingId ? 'Edit subscription' : draft.name || 'New subscription'}
-      footer={<Button label={editingId ? 'Save changes' : 'Add subscription'} onPress={save} loading={create.isPending || update.isPending} />}
+      footer={
+        <Button
+          label={editingId ? 'Save changes' : 'Add subscription'}
+          onPress={save}
+          loading={create.isPending || update.isPending}
+        />
+      }
     >
       {draft.merchantSlug ? (
         <View style={[styles.row, { gap: spacing.md }]}>
@@ -238,20 +304,31 @@ function SubscriptionForm({
         </View>
       ) : null}
 
-      <Input label="Name" value={draft.name} onChangeText={(name) => set({ name })} error={submitted ? errors.name : null} maxLength={60} />
+      <Input
+        label="Name"
+        value={draft.name}
+        onChangeText={name => set({ name })}
+        error={submitted ? errors.name : null}
+        maxLength={60}
+      />
 
       <View style={{ gap: spacing.sm }}>
         <Input
           label="Price per charge"
           value={draft.price}
-          onChangeText={(p) => set({ price: p.replace(/[^\d.,]/g, '') })}
+          onChangeText={p => set({ price: p.replace(/[^\d.,]/g, '') })}
           keyboardType="decimal-pad"
           placeholder="0.00"
           error={submitted ? errors.price : null}
         />
         <View style={[styles.wrap, { gap: spacing.sm }]}>
-          {currencies.map((c) => (
-            <Chip key={c} label={c} selected={draft.currency === c} onPress={() => set({ currency: c })} />
+          {currencies.map(c => (
+            <Chip
+              key={c}
+              label={c}
+              selected={draft.currency === c}
+              onPress={() => set({ currency: c })}
+            />
           ))}
         </View>
       </View>
@@ -262,7 +339,7 @@ function SubscriptionForm({
         </AppText>
         <Segmented
           value={draft.cadence}
-          onChange={(cadence) => set({ cadence })}
+          onChange={cadence => set({ cadence })}
           options={[
             { value: 'WEEKLY', label: 'Weekly' },
             { value: 'MONTHLY', label: 'Monthly' },
@@ -272,21 +349,51 @@ function SubscriptionForm({
         />
       </View>
 
+      <View style={[styles.row, { gap: spacing.md }]}>
+        <View style={styles.flex}>
+          <AppText variant="body">Free trial</AppText>
+          <AppText variant="caption" color="textMuted">
+            We remind you 2 days before it turns into a paid plan.
+          </AppText>
+        </View>
+        <Toggle
+          value={draft.trial}
+          onChange={trial => set({ trial })}
+          accessibilityLabel="Free trial"
+        />
+      </View>
+
       <View style={{ gap: spacing.sm }}>
         <Input
-          label="Next charge"
+          label={draft.trial ? 'Trial ends (first charge)' : 'Next charge'}
           value={draft.nextRenewal}
-          onChangeText={(nextRenewal) => set({ nextRenewal })}
+          onChangeText={nextRenewal => set({ nextRenewal })}
           placeholder="YYYY-MM-DD"
           keyboardType="numbers-and-punctuation"
           maxLength={10}
           error={submitted ? errors.date : null}
-          helper="We remind you 3 days before."
+          helper={
+            draft.trial
+              ? 'Cancel before this date to pay nothing.'
+              : 'We remind you 3 days before.'
+          }
         />
         <View style={[styles.wrap, { gap: spacing.sm }]}>
-          <Chip label="Today" selected={draft.nextRenewal === today} onPress={() => set({ nextRenewal: today })} />
-          <Chip label="In a week" selected={draft.nextRenewal === addDays(today, 7)} onPress={() => set({ nextRenewal: addDays(today, 7) })} />
-          <Chip label="In a month" selected={draft.nextRenewal === addMonths(today, 1)} onPress={() => set({ nextRenewal: addMonths(today, 1) })} />
+          <Chip
+            label="Today"
+            selected={draft.nextRenewal === today}
+            onPress={() => set({ nextRenewal: today })}
+          />
+          <Chip
+            label="In a week"
+            selected={draft.nextRenewal === addDays(today, 7)}
+            onPress={() => set({ nextRenewal: addDays(today, 7) })}
+          />
+          <Chip
+            label="In a month"
+            selected={draft.nextRenewal === addMonths(today, 1)}
+            onPress={() => set({ nextRenewal: addMonths(today, 1) })}
+          />
         </View>
       </View>
 
@@ -296,15 +403,31 @@ function SubscriptionForm({
             Paid with
           </AppText>
           <View style={[styles.wrap, { gap: spacing.sm }]}>
-            <Chip label="Not set" selected={draft.cardId === null} onPress={() => set({ cardId: null })} />
-            {cards.data.cards.map((c) => (
-              <Chip key={c.id} label={c.last4 ? `${c.nickname} ··${c.last4}` : c.nickname} selected={draft.cardId === c.id} onPress={() => set({ cardId: c.id })} />
+            <Chip
+              label="Not set"
+              selected={draft.cardId === null}
+              onPress={() => set({ cardId: null })}
+            />
+            {cards.data.cards.map(c => (
+              <Chip
+                key={c.id}
+                label={c.last4 ? `${c.nickname} ··${c.last4}` : c.nickname}
+                selected={draft.cardId === c.id}
+                onPress={() => set({ cardId: c.id })}
+              />
             ))}
           </View>
         </View>
       ) : null}
 
-      <Input label="Notes (optional)" value={draft.notes} onChangeText={(notes) => set({ notes })} multiline maxLength={500} placeholder="Shared with family, trial ends…" />
+      <Input
+        label="Notes (optional)"
+        value={draft.notes}
+        onChangeText={notes => set({ notes })}
+        multiline
+        maxLength={500}
+        placeholder="Shared with family, trial ends…"
+      />
     </Screen>
   );
 }

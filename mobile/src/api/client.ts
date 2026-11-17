@@ -51,7 +51,13 @@ function refreshSession(): Promise<Session | null> {
 }
 
 export async function api<T>(path: string, options: Options = {}): Promise<T> {
-  const { method = 'GET', body, form, auth = true, timeoutMs = 30_000 } = options;
+  const {
+    method = 'GET',
+    body,
+    form,
+    auth = true,
+    timeoutMs = 30_000,
+  } = options;
 
   const send = async (token?: string) => {
     const headers: Record<string, string> = { Accept: 'application/json' };
@@ -69,7 +75,9 @@ export async function api<T>(path: string, options: Options = {}): Promise<T> {
     } catch (err) {
       const aborted = (err as Error)?.name === 'AbortError';
       throw new ApiError(
-        aborted ? 'The server took too long to answer. Try again.' : 'Cannot reach SubTrack. Check your internet connection.',
+        aborted
+          ? 'The server took too long to answer. Try again.'
+          : 'Cannot reach SubTrack. Check your internet connection.',
         0,
         aborted ? 'TIMEOUT' : 'NETWORK',
       );
@@ -78,17 +86,28 @@ export async function api<T>(path: string, options: Options = {}): Promise<T> {
     }
   };
 
-  let res = await send(auth ? useSession.getState().session?.accessToken : undefined);
+  let res = await send(
+    auth ? useSession.getState().session?.accessToken : undefined,
+  );
   if (res.status === 401 && auth) {
     const next = await refreshSession();
-    if (!next) throw new ApiError('Your session has ended. Sign in again.', 401, 'SESSION_EXPIRED');
+    if (!next)
+      throw new ApiError(
+        'Your session has ended. Sign in again.',
+        401,
+        'SESSION_EXPIRED',
+      );
     res = await send(next.accessToken);
   }
 
   if (res.status === 204) return undefined as T;
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
-    throw new ApiError(data.error ?? `Request failed (${res.status})`, res.status, data.code);
+    throw new ApiError(
+      data.error ?? `Request failed (${res.status})`,
+      res.status,
+      data.code,
+    );
   }
   return data as T;
 }

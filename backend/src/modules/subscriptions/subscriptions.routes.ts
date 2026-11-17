@@ -22,6 +22,8 @@ const createSchema = z.object({
   priceOriginal: z.number().positive().max(1e9),
   currency: z.string().regex(/^[A-Z]{3}$/),
   nextRenewal: day,
+  /** Free trial: the day it becomes paid. The first charge then falls on this day. */
+  trialEndsAt: day.nullable().optional(),
   cardId: z.string().uuid().nullable().optional(),
   notes: z.string().max(500).nullable().optional(),
 });
@@ -78,7 +80,8 @@ subscriptionsRouter.post(
         cadence: body.cadence,
         priceOriginal: body.priceOriginal,
         currency: body.currency,
-        nextRenewal: dayToDate(body.nextRenewal),
+        nextRenewal: dayToDate(body.trialEndsAt ?? body.nextRenewal),
+        trialEndsAt: body.trialEndsAt ? dayToDate(body.trialEndsAt) : null,
         cardId: body.cardId ?? null,
         notes: body.notes ?? null,
         source: 'MANUAL',
@@ -152,7 +155,11 @@ subscriptionsRouter.patch(
 
     const sub = await prisma.subscription.update({
       where: { id: param(req, 'id') },
-      data: { ...body, nextRenewal: body.nextRenewal ? dayToDate(body.nextRenewal) : undefined },
+      data: {
+        ...body,
+        nextRenewal: body.trialEndsAt ? dayToDate(body.trialEndsAt) : body.nextRenewal ? dayToDate(body.nextRenewal) : undefined,
+        trialEndsAt: body.trialEndsAt === undefined ? undefined : body.trialEndsAt ? dayToDate(body.trialEndsAt) : null,
+      },
       include,
     });
     res.json({ subscription: serializeSubscription(sub, user.homeCurrency, await getRates()) });

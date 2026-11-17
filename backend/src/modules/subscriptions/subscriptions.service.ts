@@ -34,6 +34,8 @@ export function serializeSubscription(sub: SubscriptionWithRelations, homeCurren
     lastChargedLocal: num(sub.lastChargedLocal) ?? null,
     lastChargedAt: sub.lastChargedAt ? isoDay(sub.lastChargedAt) : null,
     nextRenewal: sub.status === 'ACTIVE' && anchor ? nextRenewal(anchor, sub.cadence, today) : null,
+    /** Set while a free trial is running: the day the first real charge happens. */
+    trialEndsAt: sub.status === 'ACTIVE' && sub.trialEndsAt && isoDay(sub.trialEndsAt) >= today ? isoDay(sub.trialEndsAt) : null,
     cost: costInHome(sub, homeCurrency, rates),
     cancelledAt: sub.cancelledAt?.toISOString() ?? null,
     verifiedAt: sub.verifiedAt?.toISOString() ?? null,

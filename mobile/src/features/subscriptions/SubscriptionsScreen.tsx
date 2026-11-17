@@ -24,8 +24,8 @@ export function SubscriptionsScreen() {
 
   const { active, cancelled, monthly, saved } = useMemo(() => {
     const subs = data?.subscriptions ?? [];
-    const a = subs.filter((s) => s.status === 'ACTIVE');
-    const c = subs.filter((s) => s.status === 'CANCELLED');
+    const a = subs.filter(s => s.status === 'ACTIVE');
+    const c = subs.filter(s => s.status === 'CANCELLED');
     return {
       active: a,
       cancelled: c,
@@ -44,7 +44,13 @@ export function SubscriptionsScreen() {
   return (
     <Screen
       title="Subscriptions"
-      actions={<HeaderButton icon={Plus} label="Add a subscription" onPress={() => navigation.navigate('AddSubscription')} />}
+      actions={
+        <HeaderButton
+          icon={Plus}
+          label="Add a subscription"
+          onPress={() => navigation.navigate('AddSubscription')}
+        />
+      }
       refreshing={isRefetching}
       onRefresh={refetch}
     >
@@ -65,9 +71,16 @@ export function SubscriptionsScreen() {
         <>
           <View style={{ gap: spacing.xs }}>
             <AppText variant="overline" color="textMuted">
-              {tab === 'ACTIVE' ? 'YOU PAY EVERY MONTH' : 'YOU SAVE EVERY MONTH'}
+              {tab === 'ACTIVE'
+                ? 'YOU PAY EVERY MONTH'
+                : 'YOU SAVE EVERY MONTH'}
             </AppText>
-            <MoneyCounter value={tab === 'ACTIVE' ? monthly : saved} currency={currency} variant="title" color={tab === 'ACTIVE' ? 'text' : 'success'} />
+            <MoneyCounter
+              value={tab === 'ACTIVE' ? monthly : saved}
+              currency={currency}
+              variant="title"
+              color={tab === 'ACTIVE' ? 'text' : 'success'}
+            />
           </View>
 
           {shown.length === 0 ? (
@@ -78,27 +91,48 @@ export function SubscriptionsScreen() {
                 body="Scan a statement to find them, or add one yourself."
                 action={
                   <View style={{ gap: spacing.sm }}>
-                    <Button label="Scan a statement" icon={ScanLine} onPress={() => navigation.navigate('Import')} />
-                    <Button label="Add manually" variant="secondary" icon={Plus} onPress={() => navigation.navigate('AddSubscription')} />
+                    <Button
+                      label="Scan a statement"
+                      icon={ScanLine}
+                      onPress={() => navigation.navigate('Import')}
+                    />
+                    <Button
+                      label="Add manually"
+                      variant="secondary"
+                      icon={Plus}
+                      onPress={() => navigation.navigate('AddSubscription')}
+                    />
                   </View>
                 }
               />
             ) : (
-              <EmptyState icon={Repeat} title="Nothing cancelled yet" body="Switch off a subscription you no longer use and the savings show up here." />
+              <EmptyState
+                icon={Repeat}
+                title="Nothing cancelled yet"
+                body="Switch off a subscription you no longer use and the savings show up here."
+              />
             )
           ) : (
             <View style={{ gap: spacing.sm }}>
-              {shown.map((s) => (
+              {shown.map(s => (
                 <SubscriptionRow
                   key={s.id}
                   subscription={s}
                   currency={currency}
-                  onPress={() => navigation.navigate('SubscriptionDetail', { id: s.id })}
-                  onToggle={(on) => toggle(s, on)}
+                  onPress={() =>
+                    navigation.navigate('SubscriptionDetail', { id: s.id })
+                  }
+                  onToggle={on => toggle(s, on)}
                 />
               ))}
-              <AppText variant="caption" color="textMuted" align="center" style={{ marginTop: spacing.sm }}>
-                “est.” means converted at today’s market rate. Amounts from your statement include bank fees.
+              <AppText
+                variant="caption"
+                color="textMuted"
+                align="center"
+                style={{ marginTop: spacing.sm }}
+              >
+                “est.” means converted at today’s market rate. Amounts from your
+                statement include bank fees.
               </AppText>
             </View>
           )}

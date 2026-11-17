@@ -21,16 +21,21 @@ export function CodeScreen({ route }: AuthScreenProps<'Code'>) {
   const [devCode, setDevCode] = useState(initialDevCode);
   const [wait, setWait] = useState(RESEND_SECONDS);
   const input = useRef<ComponentRef<typeof TextInput>>(null);
-  const signIn = useSession((s) => s.signIn);
+  const signIn = useSession(s => s.signIn);
 
   useEffect(() => {
     if (wait <= 0) return;
-    const timer = setTimeout(() => setWait((w) => w - 1), 1000);
+    const timer = setTimeout(() => setWait(w => w - 1), 1000);
     return () => clearTimeout(timer);
   }, [wait]);
 
   const verify = useMutation({
-    mutationFn: (value: string) => api<Session & { user: User }>('/auth/otp/verify', { method: 'POST', body: { email, code: value }, auth: false }),
+    mutationFn: (value: string) =>
+      api<Session & { user: User }>('/auth/otp/verify', {
+        method: 'POST',
+        body: { email, code: value },
+        auth: false,
+      }),
     onSuccess: async ({ accessToken, refreshToken }) => {
       haptics.success();
       await signIn({ accessToken, refreshToken });
@@ -42,8 +47,13 @@ export function CodeScreen({ route }: AuthScreenProps<'Code'>) {
   });
 
   const resend = useMutation({
-    mutationFn: () => api<{ devCode?: string }>('/auth/otp/request', { method: 'POST', body: { email }, auth: false }),
-    onSuccess: (res) => {
+    mutationFn: () =>
+      api<{ devCode?: string }>('/auth/otp/request', {
+        method: 'POST',
+        body: { email },
+        auth: false,
+      }),
+    onSuccess: res => {
       setWait(RESEND_SECONDS);
       setDevCode(res.devCode);
     },
@@ -60,7 +70,14 @@ export function CodeScreen({ route }: AuthScreenProps<'Code'>) {
       leading="back"
       title="Check your email"
       subtitle={`Enter the code we sent to ${email}.`}
-      footer={<Button label="Continue" onPress={() => verify.mutate(code)} loading={verify.isPending} disabled={code.length < LENGTH} />}
+      footer={
+        <Button
+          label="Continue"
+          onPress={() => verify.mutate(code)}
+          loading={verify.isPending}
+          disabled={code.length < LENGTH}
+        />
+      }
     >
       <Pressable onPress={() => input.current?.focus()} accessible={false}>
         <View style={[styles.boxes, { gap: spacing.sm }]}>
@@ -74,11 +91,22 @@ export function CodeScreen({ route }: AuthScreenProps<'Code'>) {
                   {
                     borderRadius: radius.md,
                     backgroundColor: colors.surface,
-                    borderColor: verify.isError ? colors.danger : active ? colors.primary : colors.border,
+                    borderColor: verify.isError
+                      ? colors.danger
+                      : active
+                      ? colors.primary
+                      : colors.border,
                   },
                 ]}
               >
-                <AppText style={{ fontFamily: fonts.semibold, fontSize: 24, lineHeight: 30 }} tabular>
+                <AppText
+                  style={{
+                    fontFamily: fonts.semibold,
+                    fontSize: 24,
+                    lineHeight: 30,
+                  }}
+                  tabular
+                >
                   {code[i] ?? ''}
                 </AppText>
               </View>
@@ -114,9 +142,21 @@ export function CodeScreen({ route }: AuthScreenProps<'Code'>) {
       />
 
       {devCode ? (
-        <Pressable onPress={() => onChange(devCode)} accessibilityRole="button" style={[styles.dev, { borderColor: colors.reward, borderRadius: radius.md, padding: spacing.md }]}>
+        <Pressable
+          onPress={() => onChange(devCode)}
+          accessibilityRole="button"
+          style={[
+            styles.dev,
+            {
+              borderColor: colors.reward,
+              borderRadius: radius.md,
+              padding: spacing.md,
+            },
+          ]}
+        >
           <AppText variant="caption" color="reward">
-            Development server: no email is sent. Your code is {devCode}. Tap to fill it in.
+            Development server: no email is sent. Your code is {devCode}. Tap to
+            fill it in.
           </AppText>
         </Pressable>
       ) : null}
@@ -126,7 +166,14 @@ export function CodeScreen({ route }: AuthScreenProps<'Code'>) {
 
 const styles = StyleSheet.create({
   boxes: { flexDirection: 'row', justifyContent: 'space-between' },
-  box: { flex: 1, aspectRatio: 0.85, maxHeight: 64, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
+  box: {
+    flex: 1,
+    aspectRatio: 0.85,
+    maxHeight: 64,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   hidden: { position: 'absolute', opacity: 0, height: 1, width: 1 },
   dev: { borderWidth: 1, borderStyle: 'dashed' },
 });

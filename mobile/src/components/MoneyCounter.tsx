@@ -16,7 +16,13 @@ type Props = {
 const DURATION = 650;
 
 /** Counts from the previous total to the new one, so a cancelled subscription visibly lowers the total. */
-export function MoneyCounter({ value, currency, variant = 'display', color = 'text', suffix }: Props) {
+export function MoneyCounter({
+  value,
+  currency,
+  variant = 'display',
+  color = 'text',
+  suffix,
+}: Props) {
   const reduced = useReducedMotion();
   const [shown, setShown] = useState(value);
   const from = useRef(value);
@@ -45,7 +51,14 @@ export function MoneyCounter({ value, currency, variant = 'display', color = 'te
   }, [value, reduced]);
 
   return (
-    <AppText variant={variant} color={color} tabular accessibilityLabel={`${formatMoney(value, currency)}${suffix ?? ''}`} numberOfLines={1} adjustsFontSizeToFit>
+    <AppText
+      variant={variant}
+      color={color}
+      tabular
+      accessibilityLabel={`${formatMoney(value, currency)}${suffix ?? ''}`}
+      numberOfLines={1}
+      adjustsFontSizeToFit
+    >
       {formatMoney(shown, currency)}
       {suffix ? (
         <AppText variant="heading" color="textMuted">

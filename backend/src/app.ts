@@ -12,6 +12,7 @@ import { cardsRouter } from './modules/cards/cards.routes.js';
 import { dashboardRouter } from './modules/dashboard/dashboard.routes.js';
 import { progressRouter } from './modules/gamification/progress.routes.js';
 import { healthRouter } from './modules/health/health.routes.js';
+import { legalRouter } from './modules/legal/legal.routes.js';
 import { merchantsRouter } from './modules/merchants/merchants.routes.js';
 import { candidatesRouter, statementsRouter } from './modules/statements/statements.routes.js';
 import { subscriptionsRouter } from './modules/subscriptions/subscriptions.routes.js';
@@ -36,6 +37,7 @@ export function createApp() {
   );
 
   app.use('/health', healthRouter);
+  app.use('/', legalRouter);
   app.use('/auth', authRouter);
   app.use('/billing', billingRouter);
 

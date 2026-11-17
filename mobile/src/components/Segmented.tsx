@@ -3,13 +3,32 @@ import { haptics } from '../lib/haptics';
 import { useTheme } from '../theme';
 import { AppText } from './AppText';
 
-type Props<T extends string> = { options: { value: T; label: string }[]; value: T; onChange: (value: T) => void };
+type Props<T extends string> = {
+  options: { value: T; label: string }[];
+  value: T;
+  onChange: (value: T) => void;
+};
 
-export function Segmented<T extends string>({ options, value, onChange }: Props<T>) {
+export function Segmented<T extends string>({
+  options,
+  value,
+  onChange,
+}: Props<T>) {
   const { colors, radius, spacing } = useTheme();
   return (
-    <View accessibilityRole="tablist" style={[styles.row, { backgroundColor: colors.surface, borderColor: colors.border, borderRadius: radius.full, padding: 4 }]}>
-      {options.map((option) => {
+    <View
+      accessibilityRole="tablist"
+      style={[
+        styles.row,
+        {
+          backgroundColor: colors.surface,
+          borderColor: colors.border,
+          borderRadius: radius.full,
+          padding: 4,
+        },
+      ]}
+    >
+      {options.map(option => {
         const active = option.value === value;
         return (
           <Pressable
@@ -20,9 +39,20 @@ export function Segmented<T extends string>({ options, value, onChange }: Props<
             }}
             accessibilityRole="tab"
             accessibilityState={{ selected: active }}
-            style={[styles.item, { borderRadius: radius.full, backgroundColor: active ? colors.surfaceRaised : 'transparent', paddingHorizontal: spacing.sm }]}
+            style={[
+              styles.item,
+              {
+                borderRadius: radius.full,
+                backgroundColor: active ? colors.surfaceRaised : 'transparent',
+                paddingHorizontal: spacing.sm,
+              },
+            ]}
           >
-            <AppText variant="label" color={active ? 'text' : 'textMuted'} numberOfLines={1}>
+            <AppText
+              variant="label"
+              color={active ? 'text' : 'textMuted'}
+              numberOfLines={1}
+            >
               {option.label}
             </AppText>
           </Pressable>
@@ -34,5 +64,10 @@ export function Segmented<T extends string>({ options, value, onChange }: Props<
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', borderWidth: 1 },
-  item: { flex: 1, minHeight: 40, alignItems: 'center', justifyContent: 'center' },
+  item: {
+    flex: 1,
+    minHeight: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });

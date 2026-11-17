@@ -13,10 +13,25 @@ type Props = TextInputProps & {
   right?: ReactNode;
 };
 
-export function Input({ ref, label, helper, error, icon: Icon, right, style, onFocus, onBlur, ...rest }: Props) {
+export function Input({
+  ref,
+  label,
+  helper,
+  error,
+  icon: Icon,
+  right,
+  style,
+  onFocus,
+  onBlur,
+  ...rest
+}: Props) {
   const { colors, radius, spacing, typography } = useTheme();
   const [focused, setFocused] = useState(false);
-  const borderColor = error ? colors.danger : focused ? colors.primary : colors.border;
+  const borderColor = error
+    ? colors.danger
+    : focused
+    ? colors.primary
+    : colors.border;
 
   return (
     <View style={{ gap: spacing.xs + 2 }}>
@@ -28,7 +43,13 @@ export function Input({ ref, label, helper, error, icon: Icon, right, style, onF
       <View
         style={[
           styles.field,
-          { borderColor, borderRadius: radius.md, backgroundColor: colors.surface, paddingHorizontal: spacing.md, gap: spacing.sm },
+          {
+            borderColor,
+            borderRadius: radius.md,
+            backgroundColor: colors.surface,
+            paddingHorizontal: spacing.md,
+            gap: spacing.sm,
+          },
         ]}
       >
         {Icon ? <Icon color={colors.textMuted} size={18} /> : null}
@@ -39,11 +60,11 @@ export function Input({ ref, label, helper, error, icon: Icon, right, style, onF
           accessibilityLabel={label}
           maxFontSizeMultiplier={1.6}
           {...rest}
-          onFocus={(e) => {
+          onFocus={e => {
             setFocused(true);
             onFocus?.(e);
           }}
-          onBlur={(e) => {
+          onBlur={e => {
             setFocused(false);
             onBlur?.(e);
           }}
@@ -65,6 +86,11 @@ export function Input({ ref, label, helper, error, icon: Icon, right, style, onF
 }
 
 const styles = StyleSheet.create({
-  field: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, minHeight: 52 },
+  field: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    minHeight: 52,
+  },
   input: { flex: 1, paddingVertical: 12 },
 });

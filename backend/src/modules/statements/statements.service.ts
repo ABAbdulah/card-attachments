@@ -167,6 +167,8 @@ async function reconcile(user: User, card: Card, history: Charge[], asOf: string
             lastChargedLocal: latest.amountLocal,
             lastChargedAt: dayToDate(latest.date),
             nextRenewal: dayToDate(latest.date),
+            // A real charge on or after the trial end means the trial became paid.
+            ...(sub.trialEndsAt && latest.date >= isoDay(sub.trialEndsAt) ? { trialEndsAt: null } : {}),
             ...(latest.amountOriginal && latest.originalCurrency
               ? { priceOriginal: latest.amountOriginal, currency: latest.originalCurrency }
               : {}),

@@ -15,8 +15,17 @@ export function EmailScreen({ navigation }: AuthScreenProps<'Email'>) {
   const valid = EMAIL.test(email.trim());
 
   const request = useMutation({
-    mutationFn: () => api<{ sent: true; devCode?: string }>('/auth/otp/request', { method: 'POST', body: { email: email.trim() }, auth: false }),
-    onSuccess: (res) => navigation.navigate('Code', { email: email.trim().toLowerCase(), devCode: res.devCode }),
+    mutationFn: () =>
+      api<{ sent: true; devCode?: string }>('/auth/otp/request', {
+        method: 'POST',
+        body: { email: email.trim() },
+        auth: false,
+      }),
+    onSuccess: res =>
+      navigation.navigate('Code', {
+        email: email.trim().toLowerCase(),
+        devCode: res.devCode,
+      }),
   });
 
   const submit = () => {
@@ -29,7 +38,14 @@ export function EmailScreen({ navigation }: AuthScreenProps<'Email'>) {
       leading="back"
       title="What’s your email?"
       subtitle="We’ll send you a 6-digit code. No password to remember."
-      footer={<Button label="Send code" onPress={submit} loading={request.isPending} disabled={touched && !valid} />}
+      footer={
+        <Button
+          label="Send code"
+          onPress={submit}
+          loading={request.isPending}
+          disabled={touched && !valid}
+        />
+      }
     >
       <Input
         label="Email"
@@ -45,7 +61,13 @@ export function EmailScreen({ navigation }: AuthScreenProps<'Email'>) {
         textContentType="emailAddress"
         autoFocus
         returnKeyType="send"
-        error={request.error ? errorMessage(request.error) : touched && email && !valid ? 'Enter a valid email address.' : null}
+        error={
+          request.error
+            ? errorMessage(request.error)
+            : touched && email && !valid
+            ? 'Enter a valid email address.'
+            : null
+        }
       />
     </Screen>
   );

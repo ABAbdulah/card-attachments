@@ -32,7 +32,12 @@ export type Rewards = {
   newBadges: { id: string; name: string }[];
 };
 
-export type Cost = { perCharge: number; monthly: number; yearly: number; basis: 'actual' | 'estimated' };
+export type Cost = {
+  perCharge: number;
+  monthly: number;
+  yearly: number;
+  basis: 'actual' | 'estimated';
+};
 
 export type Subscription = {
   id: string;
@@ -52,6 +57,8 @@ export type Subscription = {
   lastChargedLocal: number | null;
   lastChargedAt: string | null;
   nextRenewal: string | null;
+  /** Set while a free trial runs: the day it becomes paid. */
+  trialEndsAt: string | null;
   cost: Cost;
   cancelledAt: string | null;
   verifiedAt: string | null;
@@ -96,7 +103,22 @@ export type Dashboard = {
   savedMonthly: number;
   activeCount: number;
   cancelledCount: number;
-  upcoming: { id: string; name: string; brandColor: string | null; date: string; amount: number }[];
+  upcoming: {
+    id: string;
+    name: string;
+    brandColor: string | null;
+    date: string;
+    amount: number;
+    trial: boolean;
+  }[];
+  trialsEnding: {
+    id: string;
+    name: string;
+    brandColor: string | null;
+    date: string;
+    amount: number;
+  }[];
+  hasSavingsGoal: boolean;
   categories: { name: string; monthly: number }[];
   unreadAlerts: number;
   pendingCandidates: number;
@@ -193,8 +215,20 @@ export type Progress = {
   levelStartXp: number;
   nextLevelXp: number | null;
   streak: { months: number; activeThisMonth: boolean };
-  savings: { currency: string; monthly: number; lifetime: number; activeMonthly: number; goalMonthly: number | null };
-  badges: { id: string; name: string; description: string; earned: boolean; earnedAt: string | null }[];
+  savings: {
+    currency: string;
+    monthly: number;
+    lifetime: number;
+    activeMonthly: number;
+    goalMonthly: number | null;
+  };
+  badges: {
+    id: string;
+    name: string;
+    description: string;
+    earned: boolean;
+    earnedAt: string | null;
+  }[];
   recent: { id: string; label: string; xp: number; at: string }[];
 };
 

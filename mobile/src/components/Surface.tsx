@@ -14,7 +14,15 @@ type Props = {
 };
 
 /** Flat card: depth comes from the surface colour step and a hairline border, not shadows. */
-export function Surface({ children, onPress, padded = true, raised, style, accessibilityLabel, accessibilityHint }: Props) {
+export function Surface({
+  children,
+  onPress,
+  padded = true,
+  raised,
+  style,
+  accessibilityLabel,
+  accessibilityHint,
+}: Props) {
   const { colors, radius, spacing } = useTheme();
   const base: ViewStyle = {
     backgroundColor: raised ? colors.surfaceRaised : colors.surface,

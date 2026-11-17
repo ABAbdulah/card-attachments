@@ -14,44 +14,86 @@ type Props = {
   onToggle: (active: boolean) => void;
 };
 
-export function SubscriptionRow({ subscription: s, currency, onPress, onToggle }: Props) {
+export function SubscriptionRow({
+  subscription: s,
+  currency,
+  onPress,
+  onToggle,
+}: Props) {
   const { colors, radius, spacing } = useTheme();
   const active = s.status === 'ACTIVE';
   const meta = active
-    ? s.nextRenewal
+    ? s.trialEndsAt
+      ? `Free trial · ends ${formatDay(s.trialEndsAt)}`
+      : s.nextRenewal
       ? `${CADENCE_LABEL[s.cadence]} · renews ${formatDay(s.nextRenewal)}`
       : CADENCE_LABEL[s.cadence]
     : s.verifiedAt
-      ? 'Cancelled · confirmed by statement'
-      : 'Cancelled';
+    ? 'Cancelled · confirmed by statement'
+    : 'Cancelled';
 
   return (
     <PressableScale
       onPress={onPress}
       scaleTo={0.98}
       accessibilityRole="button"
-      accessibilityLabel={`${s.name}, ${formatMoney(s.cost.monthly, currency)} a month, ${meta}`}
+      accessibilityLabel={`${s.name}, ${formatMoney(
+        s.cost.monthly,
+        currency,
+      )} a month, ${meta}`}
       accessibilityHint="Opens details"
-      style={[styles.row, { backgroundColor: colors.surface, borderColor: colors.border, borderRadius: radius.lg, padding: spacing.md, gap: spacing.md }]}
+      style={[
+        styles.row,
+        {
+          backgroundColor: colors.surface,
+          borderColor: colors.border,
+          borderRadius: radius.lg,
+          padding: spacing.md,
+          gap: spacing.md,
+        },
+      ]}
     >
       <MerchantAvatar name={s.name} color={s.brandColor} muted={!active} />
       <View style={styles.flex}>
-        <AppText variant="bodyStrong" numberOfLines={1} color={active ? 'text' : 'textMuted'}>
+        <AppText
+          variant="bodyStrong"
+          numberOfLines={1}
+          color={active ? 'text' : 'textMuted'}
+        >
           {s.name}
         </AppText>
-        <AppText variant="caption" color={s.verifiedAt && !active ? 'success' : 'textMuted'} numberOfLines={1}>
+        <AppText
+          variant="caption"
+          color={
+            s.trialEndsAt
+              ? 'reward'
+              : s.verifiedAt && !active
+              ? 'success'
+              : 'textMuted'
+          }
+          numberOfLines={1}
+        >
           {meta}
         </AppText>
       </View>
       <View style={styles.right}>
-        <AppText variant="bodyStrong" tabular color={active ? 'text' : 'textMuted'} style={!active && styles.struck}>
+        <AppText
+          variant="bodyStrong"
+          tabular
+          color={active ? 'text' : 'textMuted'}
+          style={!active && styles.struck}
+        >
           {formatMoney(s.cost.monthly, currency)}
         </AppText>
         <AppText variant="caption" color="textMuted">
           {s.cost.basis === 'actual' ? 'per month' : 'est. per month'}
         </AppText>
       </View>
-      <Toggle value={active} onChange={onToggle} accessibilityLabel={`${s.name} active`} />
+      <Toggle
+        value={active}
+        onChange={onToggle}
+        accessibilityLabel={`${s.name} active`}
+      />
     </PressableScale>
   );
 }

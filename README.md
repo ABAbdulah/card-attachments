@@ -58,9 +58,22 @@ Checks: `npm test`, `npm run typecheck`, `npm run lint`.
 
 iOS builds need macOS; see the development setup section in PLAN.md.
 
+## Release build (Android)
+
+```sh
+cd mobile/android
+./gradlew assembleRelease      # app/build/outputs/apk/release/app-release.apk
+./gradlew bundleRelease        # .aab for Google Play
+```
+
+Release builds are signed with the upload key in `mobile/android/app/subtrack-upload.keystore`; its password is in `mobile/android/keystore.properties`. Both are git-ignored. **Back them up somewhere safe** (a password manager): without them you cannot ship updates under the same Play listing until Google resets the upload key.
+
+A release build talks to `PROD_API_URL` in `mobile/src/config.ts`, so it only works once the backend is deployed.
+
 ## Deploy the backend to Railway
 
 1. Create a Railway project with a **Postgres** service and a service from this repository with root directory `backend`.
 2. Set variables on the API service: `DATABASE_URL` (reference the Postgres service), `NODE_ENV=production`, `JWT_SECRET`, `RESEND_API_KEY`, `EMAIL_FROM`, and optionally `ANTHROPIC_API_KEY` and `REVENUECAT_WEBHOOK_SECRET`.
 3. `backend/railway.json` builds the API, runs migrations and the catalog seed before each deploy, and health-checks `/health/ready`.
 4. Put the public API URL in `mobile/src/config.ts` (`PROD_API_URL`).
+5. The privacy policy and terms are then live at `<API URL>/privacy` and `<API URL>/terms` (needed for the store listings). Fill in the placeholders in `backend/legal/` first.

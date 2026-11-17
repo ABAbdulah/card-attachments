@@ -100,3 +100,35 @@ describe('subscriptions', () => {
     expect(all.body.merchants.some((m: { slug: string }) => m.slug === 'upwork')).toBe(false);
   });
 });
+
+describe('free trials', () => {
+  const inDays = (n: number) => new Date(Date.now() + n * 86_400_000).toISOString().slice(0, 10);
+
+  it('shows a running trial, its first charge date, and no charge before it ends', async () => {
+    const { auth } = await createUser();
+    const trialEnd = inDays(5);
+    const res = await addSpotify(auth, { merchantSlug: 'netflix', name: 'Netflix', priceOriginal: 10, nextRenewal: inDays(40), trialEndsAt: trialEnd }).expect(201);
+    expect(res.body.subscription).toMatchObject({ trialEndsAt: trialEnd, nextRenewal: trialEnd });
+
+    const dash = await api().get('/dashboard').set(auth).expect(200);
+    expect(dash.body.trialsEnding).toEqual([expect.objectContaining({ name: 'Netflix', date: trialEnd, amount: 3000 })]);
+    expect(dash.body.upcoming[0]).toMatchObject({ name: 'Netflix', trial: true });
+    expect(dash.body.paidThisMonth).toBe(0);
+  });
+
+  it('clears the trial when it is edited away', async () => {
+    const { auth } = await createUser();
+    const { body } = await addSpotify(auth, { trialEndsAt: inDays(3) }).expect(201);
+    const updated = await api().patch(`/subscriptions/${body.subscription.id}`).set(auth).send({ trialEndsAt: null }).expect(200);
+    expect(updated.body.subscription.trialEndsAt).toBeNull();
+  });
+});
+
+describe('legal pages', () => {
+  it('serves the privacy policy and terms publicly', async () => {
+    const privacy = await api().get('/privacy').expect(200);
+    expect(privacy.text).toContain('<h1>SubTrack privacy policy</h1>');
+    const terms = await api().get('/terms').expect(200);
+    expect(terms.text).toContain('cannot cancel subscriptions for you');
+  });
+});
